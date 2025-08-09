@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Item Management</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .btn-primary { background-color: #2ECC71; color: white; padding: 0.5rem 1rem; border-radius: 5px; }
+    .btn-danger { background-color: #E74C3C; color: white; padding: 0.5rem 1rem; border-radius: 5px; }
+    .btn-warning { background-color: #F39C12; color: white; padding: 0.5rem 1rem; border-radius: 5px; }
+    .btn-primary:hover { background-color: #27AE60; }
+    .btn-danger:hover { background-color: #C0392B; }
+    .btn-warning:hover { background-color: #D68910; }
+  </style>
+</head>
+<body class="p-6 bg-gray-100 min-h-screen">
+
+  <h1 class="text-2xl font-bold mb-4">Item Management</h1>
+
+  <!-- Add Item Form -->
+  <form id="itemForm" class="bg-white p-4 rounded shadow mb-6">
+    <input type="hidden" id="itemId">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <input type="text" id="title" placeholder="Title" class="border p-2" required>
+      <input type="text" id="author" placeholder="Author" class="border p-2" required>
+      <textarea id="description" placeholder="Description" class="border p-2" required></textarea>
+      <input type="number" step="0.01" id="price" placeholder="Price" class="border p-2" required>
+      <input type="number" id="stockQty" placeholder="Stock Qty" class="border p-2" required>
+      <input type="file" id="imageUpload" class="border p-2" accept="image/*">
+    </div>
+    <div class="mt-4">
+      <button type="submit" class="btn-primary">Save Item</button>
+    </div>
+  </form>
+
+  <!-- Message -->
+  <div id="message" class="mb-4 text-green-600 font-semibold"></div>
+
+  <!-- Item Table -->
+  <table class="w-full bg-white shadow rounded">
+    <thead class="bg-gray-200">
+      <tr>
+        <th class="p-2">Image</th>
+        <th class="p-2">Title</th>
+        <th class="p-2">Author</th>
+        <th class="p-2">Price</th>
+        <th class="p-2">Stock</th>
+        <th class="p-2">Actions</th>
+      </tr>
+    </thead>
+    <tbody id="itemTable"></tbody>
+  </table>
+
+  <script>
+    const API_BASE = "http://localhost:8080/PahanaEduService/api/items";
+
+    document.getElementById("itemForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const file = document.getElementById("imageUpload").files[0];
+      if (file) {
+        uploadImage(file);
+      } else {
+        alert("Please choose an image.");
+      }
+    });
+
+    function uploadImage(file) {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      fetch(`${API_BASE}/upload`, {
+        method: "POST",
+        body: formData
+      })
+      .then(res => res.json())
+      .then(data => {
+        const imageUrl = data.imageUrl;
+        submitItem(imageUrl);
+      })
+      .catch(() => alert("Image upload failed."));
+    }
+
+    function submitItem(imageUrl) {
+      const id = document.getElementById("itemId").value;
+      const item = {
+        title: document.getElementById("title").value.trim(),
+        author: document.getElementById("author").value.trim(),
+        description: document.getElementById("description").value.trim(),
+        price: parseFloat(document.getElementById("price").value),
+        stockQty: parseInt(document.getElementById("stockQty").value),
+        imageUrl: imageUrl
+      };
+
+      const method = id ? "PUT" : "POST";
+      const url = id ? `${API_BASE}/${id}` : API_BASE;
+
+      fetch(url, {
+        method: method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(item)
+      })
+      .then(res => res.json())
+      .then(() => {
+        document.getElementById("message").textContent = id ? "Item updated!" : "Item created!";
+        document.getElementById("itemForm").reset();
+        loadItems();
+      })
+      .catch(() => alert("Failed to save item."));
+    }
+
+    function loadItems() {
+      fetch(API_BASE)
+        .then(res => res.json())
+        .then(items => {
+          const table = document.getElementById("itemTable");
+          table.innerHTML = "";
+          items.forEach(item => {
+            table.innerHTML += `
+              <tr>
+                <td class="p-2"><img src="http://localhost:8080/PahanaEduService/${item.imageUrl}" class="h-16 w-16 object-cover"/></td>
+                <td class="p-2">${item.title}</td>
+                <td class="p-2">${item.author}</td>
+                <td class="p-2">Rs. ${item.price.toFixed(2)}</td>
+                <td class="p-2">${item.stockQty}</td>
+                <td class="p-2">
+                  <button class="btn-warning" onclick="editItem(${item.id})">Edit</button>
+                  <button class="btn-danger ml-2" onclick="deleteItem(${item.id})">Delete</button>
+                </td>
+              </tr>
+            `;
+          });
+        });
+    }
+
+    function deleteItem(id) {
+      if (!confirm("Are you sure?")) return;
+      fetch(`${API_BASE}/${id}`, { method: "DELETE" })
+        .then(() => {
+          document.getElementById("message").textContent = "Item deleted!";
+          loadItems();
+        });
+    }
+
+    function editItem(id) {
+      fetch(`${API_BASE}/${id}`)
+        .then(res => res.json())
+        .then(item => {
+          document.getElementById("itemId").value = item.id;
+          document.getElementById("title").value = item.title;
+          document.getElementById("author").value = item.author;
+          document.getElementById("description").value = item.description;
+          document.getElementById("price").value = item.price;
+          document.getElementById("stockQty").value = item.stockQty;
+          // Note: image input cannot prefill
+        });
+    }
+
+    loadItems();
+  </script>
+
+</body>
+</html>

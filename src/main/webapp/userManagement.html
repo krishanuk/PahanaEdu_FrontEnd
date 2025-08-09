@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bookshop Management System - User Management</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: #F5F6FA; /* Light Gray */
+    }
+    .sidebar {
+      background: linear-gradient(to bottom, #2C3E94, #1A2A6C); /* Royal Blue gradient */
+      transition: all 0.3s ease;
+    }
+    .sidebar a:hover {
+      background-color: #2ECC71; /* Emerald Green */
+      transform: translateX(5px);
+    }
+    .card {
+      background-color: #FFFFFF; /* White */
+      border: 1px solid rgba(44, 62, 148, 0.1);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      transition: transform 0.2s ease;
+    }
+    .card:hover {
+      transform: translateY(-2px);
+    }
+    .text-primary {
+      color: #2D3436; /* Charcoal */
+    }
+    .text-muted {
+      color: #7F8C8D; /* Mid Gray */
+    }
+    .btn-primary {
+      background: linear-gradient(to right, #2ECC71, #27AE60); /* Emerald Green gradient */
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .btn-danger {
+      background-color: #E74C3C; /* Crimson Red */
+    }
+    .btn-danger:hover {
+      background-color: #C0392B;
+    }
+    .btn-warning {
+      background-color: #F1C40F; /* Amber Yellow */
+    }
+    .btn-warning:hover {
+      background-color: #D4AC0D;
+    }
+    .header {
+      background-color: #FFFFFF;
+      border-bottom: 1px solid rgba(44, 62, 148, 0.1);
+    }
+    section {
+      animation: fadeIn 0.5s ease-in-out;
+    }
+    .error {
+      color: #E74C3C; /* Crimson Red */
+      background-color: rgba(231, 76, 60, 0.1);
+      border: 1px solid #E74C3C;
+    }
+    .success {
+      color: #2ECC71; /* Emerald Green */
+      background-color: rgba(46, 204, 113, 0.1);
+      border: 1px solid #2ECC71;
+    }
+    .modal {
+      background-color: rgba(0, 0, 0, 0.5);
+      transition: opacity 0.3s ease;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border: 2px solid #2C3E94; /* Royal Blue */
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body class="flex flex-col min-h-screen">
+  <!-- Header -->
+  <header class="header flex items-center justify-between p-4">
+    <div class="flex items-center">
+      <a href="http://localhost:8080/PahanaEduWeb/adminDashboard.html"><img src="images/pahanaEduLogo.png" alt="Pahana Edu Logo" width="120" class="mr-4"></a>
+      <h1 class="text-xl font-bold text-primary">Bookshop Management System</h1>
+    </div>
+    <div class="flex items-center">
+      <span id="user-greeting" class="text-primary mr-4"></span>
+      <button id="logout-btn" class="btn-primary text-white px-4 py-2 rounded">Logout</button>
+    </div>
+  </header>
+  <div id="notification" class="hidden text-center m-4 p-2 rounded text-sm"></div>
+  <div class="flex flex-1">
+    <!-- Sidebar -->
+    <div class="sidebar w-64 text-white p-4 fixed h-full">
+      <nav>
+        <a href="#" class="block py-2 px-4 rounded hover:text-white mb-2">User Management</a>
+      </nav>
+    </div>
+    <!-- Main Content -->
+    <div class="flex-1 p-6 ml-64">
+      <!-- User Management Section -->
+      <section id="user-management" class="mb-8">
+        <h2 class="text-2xl font-bold text-primary mb-4">User Management</h2>
+        <div class="card p-6 rounded-lg">
+          <button id="add-user-btn" class="btn-primary text-white px-4 py-2 rounded mb-4">Add User</button>
+          <div id="user-loading" class="text-muted mb-4 hidden">Loading users...</div>
+          <table class="w-full">
+            <thead>
+              <tr class="bg-gray-200">
+                <th class="p-2 text-left">Username</th>
+                <th class="p-2 text-left">Role</th>
+                <th class="p-2 text-left">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="user-table-body"></tbody>
+          </table>
+        </div>
+      </section>
+      <!-- Generic CRUD Modal -->
+      <div id="crud-modal" class="modal hidden fixed inset-0 flex items-center justify-center">
+        <div class="card p-6 rounded-lg w-full max-w-md">
+          <h3 id="modal-title" class="text-xl font-bold text-primary mb-4"></h3>
+          <form id="crud-form">
+            <div id="modal-fields"></div>
+            <div class="flex justify-end space-x-2">
+              <button type="button" id="modal-cancel" class="btn-danger text-white px-4 py-2 rounded">Cancel</button>
+              <button type="submit" id="modal-submit" class="btn-primary text-white px-4 py-2 rounded">Save</button>
+            </div>
+          </form>
+        </div>
+      </div>
+      <!-- Delete Confirmation Modal -->
+      <div id="delete-modal" class="modal hidden fixed inset-0 flex items-center justify-center">
+        <div class="card p-6 rounded-lg w-full max-w-md">
+          <h3 class="text-xl font-bold text-primary mb-4">Confirm Delete</h3>
+          <p class="text-muted mb-4">Are you sure you want to delete <span id="delete-name"></span>?</p>
+          <div class="flex justify-end space-x-2">
+            <button id="delete-cancel" class="btn-primary text-white px-4 py-2 rounded">Cancel</button>
+            <button id="delete-confirm" class="btn-danger text-white px-4 py-2 rounded">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const user = JSON.parse(sessionStorage.getItem('user'));
+      const notification = document.getElementById('notification');
+      console.log('sessionStorage user:', user);
+
+      if (!user || !user.role) {
+        console.log('No user or role in sessionStorage, redirecting to login');
+        notification.textContent = 'Please log in to access the dashboard';
+        notification.classList.add('error');
+        notification.classList.remove('hidden');
+        setTimeout(() => window.location.href = 'login.html', 2000);
+        return;
+      }
+
+      const isAdmin = user.role.toLowerCase() === 'admin';
+      if (!isAdmin) {
+        console.log('User is not Admin, redirecting to cashierDashboard.html');
+        notification.textContent = 'Access denied: Admins only';
+        notification.classList.add('error');
+        notification.classList.remove('hidden');
+        setTimeout(() => window.location.href = 'cashierDashboard.html', 2000);
+        return;
+      }
+
+      document.getElementById('user-greeting').textContent = `Welcome, ${user.username}`;
+
+      document.getElementById('logout-btn').addEventListener('click', () => {
+        console.log('Logging out, clearing sessionStorage');
+        sessionStorage.removeItem('user');
+        window.location.href = 'login.html';
+      });
+
+      const crudModal = document.getElementById('crud-modal');
+      const modalTitle = document.getElementById('modal-title');
+      const modalFields = document.getElementById('modal-fields');
+      const modalSubmit = document.getElementById('modal-submit');
+      const modalCancel = document.getElementById('modal-cancel');
+      const deleteModal = document.getElementById('delete-modal');
+      const deleteName = document.getElementById('delete-name');
+      const deleteConfirm = document.getElementById('delete-confirm');
+      const deleteCancel = document.getElementById('delete-cancel');
+
+      function showNotification(message, isSuccess) {
+        notification.textContent = message;
+        notification.classList.remove('error', 'success');
+        notification.classList.add(isSuccess ? 'success' : 'error');
+        notification.classList.remove('hidden');
+        setTimeout(() => notification.classList.add('hidden'), 3000);
+      }
+
+      function closeModal(modal) {
+        modal.classList.add('hidden');
+        modalFields.innerHTML = '';
+      }
+
+      const userTableBody = document.getElementById('user-table-body');
+      const userLoading = document.getElementById('user-loading');
+
+      async function fetchUsers() {
+        userLoading.classList.remove('hidden');
+        try {
+          const response = await fetch('http://localhost:8080/PahanaEduService/api/users', {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+          });
+          const users = await response.json();
+          userLoading.classList.add('hidden');
+          userTableBody.innerHTML = '';
+          if (!users || users.length === 0) {
+            userTableBody.innerHTML = '<tr><td colspan="3" class="p-2 text-muted">No users found</td></tr>';
+          } else {
+            users.forEach(user => {
+              userTableBody.innerHTML += `
+                <tr>
+                  <td class="p-2">${user.username}</td>
+                  <td class="p-2">${user.role}</td>
+                  <td class="p-2">
+                    <button data-id="${user.id}" data-username="${user.username}" data-role="${user.role}" class="btn-warning text-white px-2 py-1 rounded mr-2 edit-user">Edit</button>
+                    <button data-id="${user.id}" data-username="${user.username}" class="btn-danger text-white px-2 py-1 rounded delete-user">Delete</button>
+                  </td>
+                </tr>
+              `;
+            });
+
+            document.querySelectorAll('.edit-user').forEach(btn => {
+              btn.addEventListener('click', () => {
+                modalTitle.textContent = 'Edit User';
+                modalFields.innerHTML = `
+                  <div class="mb-4">
+                    <label for="modal-username" class="block text-primary font-semibold text-sm mb-2">Username</label>
+                    <input type="text" id="modal-username" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#2C3E94]" value="${btn.dataset.username}" disabled>
+                  </div>
+                  <div class="mb-4">
+                    <label for="modal-password" class="block text-primary font-semibold text-sm mb-2">Password</label>
+                    <input type="password" id="modal-password" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#2C3E94]" placeholder="Leave blank to keep existing password">
+                  </div>
+                  <div class="mb-4">
+                    <label for="modal-role" class="block text-primary font-semibold text-sm mb-2">Role</label>
+                    <select id="modal-role" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#2C3E94]" required>
+                      <option value="admin" ${btn.dataset.role.toLowerCase() === 'admin' ? 'selected' : ''}>Admin</option>
+                      <option value="cashier" ${btn.dataset.role.toLowerCase() === 'cashier' ? 'selected' : ''}>Cashier</option>
+                    </select>
+                  </div>
+                `;
+                crudModal.classList.remove('hidden');
+                modalSubmit.dataset.id = btn.dataset.id;
+                modalSubmit.dataset.mode = 'edit-user';
+              });
+            });
+
+            document.querySelectorAll('.delete-user').forEach(btn => {
+              btn.addEventListener('click', () => {
+                deleteName.textContent = btn.dataset.username;
+                deleteModal.classList.remove('hidden');
+                deleteConfirm.dataset.id = btn.dataset.id;
+                deleteConfirm.dataset.mode = 'delete-user';
+              });
+            });
+          }
+        } catch (error) {
+          console.error('Error fetching users:', error);
+          userLoading.classList.add('hidden');
+          userTableBody.innerHTML = '<tr><td colspan="3" class="p-2 error">Error loading users</td></tr>';
+          showNotification('Error loading users', false);
+        }
+      }
+
+      document.getElementById('add-user-btn').addEventListener('click', () => {
+        modalTitle.textContent = 'Add User';
+        modalFields.innerHTML = `
+          <div class="mb-4">
+            <label for="modal-username" class="block text-primary font-semibold text-sm mb-2">Username</label>
+            <input type="text" id="modal-username" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#2C3E94]" placeholder="Enter username" required>
+          </div>
+          <div class="mb-4">
+            <label for="modal-password" class="block text-primary font-semibold text-sm mb-2">Password</label>
+            <input type="password" id="modal-password" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#2C3E94]" placeholder="Enter password" required>
+          </div>
+          <div class="mb-4">
+            <label for="modal-role" class="block text-primary font-semibold text-sm mb-2">Role</label>
+            <select id="modal-role" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#2C3E94]" required>
+              <option value="admin">Admin</option>
+              <option value="cashier">Cashier</option>
+            </select>
+          </div>
+        `;
+        crudModal.classList.remove('hidden');
+        modalSubmit.dataset.mode = 'add-user';
+      });
+
+      document.getElementById('crud-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const mode = modalSubmit.dataset.mode;
+        let url, method, data;
+
+        if (mode.includes('user')) {
+          const username = document.getElementById('modal-username').value.trim();
+          const password = document.getElementById('modal-password').value.trim();
+          const role = document.getElementById('modal-role').value;
+
+          if (mode === 'add-user' && !password) {
+            showNotification('Password is required for new user', false);
+            return;
+          }
+
+          data = { username, role };
+          if (password) data.password = password;
+          url = mode === 'add-user' ? 'http://localhost:8080/PahanaEduService/api/users' : `http://localhost:8080/PahanaEduService/api/users/${modalSubmit.dataset.id}`;
+          method = mode === 'add-user' ? 'POST' : 'PUT';
+        }
+
+        try {
+          const response = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          });
+          const responseData = await response.json();
+
+          if (response.ok) {
+            showNotification(responseData.message || `User ${mode.includes('add') ? 'added' : 'updated'} successfully`, true);
+            closeModal(crudModal);
+            fetchUsers();
+          } else {
+            showNotification(responseData.error || 'Operation failed', false);
+          }
+        } catch (error) {
+          console.error('Error:', error);
+          showNotification('Error connecting to server', false);
+        }
+      });
+
+      deleteConfirm.addEventListener('click', async () => {
+        const id = deleteConfirm.dataset.id;
+        const mode = deleteConfirm.dataset.mode;
+        const url = `http://localhost:8080/PahanaEduService/api/users/${id}`;
+
+        try {
+          const response = await fetch(url, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' }
+          });
+          const responseData = response.status !== 204 ? await response.json() : {};
+
+          if (response.ok || response.status === 204) {
+            showNotification(responseData.message || 'User deleted successfully', true);
+            closeModal(deleteModal);
+            fetchUsers();
+          } else {
+            showNotification(responseData.error || 'Failed to delete user', false);
+          }
+        } catch (error) {
+          console.error('Error deleting:', error);
+          showNotification('Error connecting to server', false);
+        }
+      });
+
+      modalCancel.addEventListener('click', () => closeModal(crudModal));
+      deleteCancel.addEventListener('click', () => closeModal(deleteModal));
+
+      fetchUsers();
+    });
+  </script>
+</body>
+</html>

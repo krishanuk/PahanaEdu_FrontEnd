@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bookshop Management System - Cashier Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: #F5F6FA; /* Light Gray */
+    }
+    .sidebar {
+      background: linear-gradient(to bottom, #2C3E94, #1A2A6C); /* Royal Blue gradient */
+      transition: all 0.3s ease;
+    }
+    .sidebar a:hover {
+      background-color: #2ECC71; /* Emerald Green */
+      transform: translateX(5px);
+    }
+    .card {
+      background-color: #FFFFFF; /* White */
+      border: 1px solid rgba(44, 62, 148, 0.1);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      transition: transform 0.2s ease;
+    }
+    .card:hover {
+      transform: translateY(-2px);
+    }
+    .text-primary {
+      color: #2D3436; /* Charcoal */
+    }
+    .text-muted {
+      color: #7F8C8D; /* Mid Gray */
+    }
+    .btn-primary {
+      background: linear-gradient(to right, #2ECC71, #27AE60); /* Emerald Green gradient */
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .btn-danger {
+      background-color: #E74C3C; /* Crimson Red */
+    }
+    .btn-danger:hover {
+      background-color: #C0392B;
+    }
+    .btn-warning {
+      background-color: #F39C12; /* Amber Yellow */
+    }
+    .btn-warning:hover {
+      background-color: #D68910;
+    }
+    .header {
+      background-color: #FFFFFF;
+      border-bottom: 1px solid rgba(44, 62, 148, 0.1);
+    }
+    section {
+      animation: fadeIn 0.5s ease-in-out;
+    }
+    .error {
+      color: #E74C3C; /* Crimson Red */
+      background-color: rgba(231, 76, 60, 0.1);
+      border: 1px solid #E74C3C;
+    }
+    .error-input {
+      border: 2px solid #E74C3C !important;
+    }
+    .success {
+      color: #2ECC71; /* Emerald Green */
+      background-color: rgba(46, 204, 113, 0.1);
+      border: 1px solid #2ECC71;
+    }
+    .modal {
+      background-color: rgba(0, 0, 0, 0.5);
+      transition: opacity 0.3s ease;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border: 2px solid #2C3E94; /* Royal Blue */
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body class="flex flex-col min-h-screen">
+  <!-- Header -->
+  <header class="header flex items-center justify-between p-4">
+    <div class="flex items-center">
+      <a href="http://localhost:8080/PahanaEduWeb/cashierDashboard.html"><img src="images/pahanaEduLogo.png" alt="Pahana Edu Logo" width="120" class="mr-4"></a>
+      <h1 class="text-xl font-bold text-primary">Bookshop Management System</h1>
+    </div>
+    <div class="flex items-center">
+      <span id="user-greeting" class="text-primary mr-4"></span>
+      <button id="logout-btn" class="btn-primary text-white px-4 py-2 rounded">Logout</button>
+    </div>
+  </header>
+  <div id="notification" class="hidden text-center m-4 p-2 rounded text-sm"></div>
+  <div class="flex flex-1">
+    <!-- Sidebar -->
+    <div class="sidebar w-64 text-white p-4 fixed h-full">
+      <nav>
+        <a href="#" class="block py-2 px-4 rounded hover:text-white mb-2">Cashier Dashboard</a>
+      </nav>
+        <nav>
+        <a href="http://localhost:8080/PahanaEduWeb/customerManagement.html" class="block py-2 px-4 rounded hover:text-white mb-2">Customer Management</a>
+      </nav>
+        <nav>
+        <a href="http://localhost:8080/PahanaEduWeb/viewProducts.html" class="block py-2 px-4 rounded hover:text-white mb-2">Shopping Cart</a>
+      </nav>
+    </div>
+    <!-- Main Content -->
+    <div class="flex-1 p-6 ml-64">
+      <!-- Cashier Dashboard Section -->
+      <section id="cashier-dashboard" class="mb-8">
+        <h2 class="text-2xl font-bold text-primary mb-4">Cashier Dashboard</h2>
+        <div class="card p-6 rounded-lg">
+          <div id="item-loading" class="text-muted mb-4 hidden">Loading items...</div>
+          <table class="w-full bg-white shadow rounded">
+            <thead class="bg-gray-200">
+              <tr>
+                <th class="p-2 text-left">ID</th>
+                <th class="p-2 text-left">Title</th>
+                <th class="p-2 text-left">Author</th>
+                <th class="p-2 text-left">Description</th>
+                <th class="p-2 text-left">Price</th>
+                <th class="p-2 text-left">Stock Qty</th>
+                <th class="p-2 text-left">Image</th>
+                <th class="p-2 text-left">Added At</th>
+                <th class="p-2 text-left">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="item-table-body"></tbody>
+          </table>
+        </div>
+      </section>
+      <!-- Sell Item Modal -->
+      <div id="sell-modal" class="modal hidden fixed inset-0 flex items-center justify-center">
+        <div class="card p-6 rounded-lg w-full max-w-md">
+          <h3 class="text-xl font-bold text-primary mb-4">Sell Item</h3>
+          <form id="sell-form" aria-label="Sell Item Form">
+            <div class="mb-4">
+              <label for="item-title" class="block text-primary font-semibold text-sm mb-2">Title</label>
+              <input type="text" id="item-title" class="w-full p-3 border rounded-lg" readonly>
+            </div>
+            <div class="mb-4">
+              <label for="item-price" class="block text-primary font-semibold text-sm mb-2">Price</label>
+              <input type="text" id="item-price" class="w-full p-3 border rounded-lg" readonly>
+            </div>
+            <div class="mb-4">
+              <label for="item-stock_qty" class="block text-primary font-semibold text-sm mb-2">Available Stock</label>
+              <input type="text" id="item-stock_qty" class="w-full p-3 border rounded-lg" readonly>
+            </div>
+            <div class="mb-4">
+              <label for="sell-quantity" class="block text-primary font-semibold text-sm mb-2">Quantity to Sell</label>
+              <input type="number" id="sell-quantity" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#2C3E94]" min="1" required>
+            </div>
+            <div class="flex justify-end space-x-2">
+              <button type="button" id="sell-cancel" class="btn-danger text-white px-4 py-2 rounded">Cancel</button>
+              <button type="submit" id="sell-submit" class="btn-primary text-white px-4 py-2 rounded">Sell</button>
+            </div>
+          </form>
+        </div>
+      </div>
+      <!-- View Item Modal -->
+      <div id="view-modal" class="modal hidden fixed inset-0 flex items-center justify-center">
+        <div class="card p-6 rounded-lg w-full max-w-md">
+          <h3 class="text-xl font-bold text-primary mb-4">Item Details</h3>
+          <div id="view-details" class="mb-4"></div>
+          <div class="flex justify-end">
+            <button id="view-close" class="btn-primary text-white px-4 py-2 rounded">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const user = JSON.parse(sessionStorage.getItem('user'));
+      const notification = document.getElementById('notification');
+      const sellForm = document.getElementById('sell-form');
+      console.log('sessionStorage user:', user);
+
+      if (!user || !user.role) {
+        console.log('No user or role in sessionStorage, redirecting to login');
+        notification.textContent = 'Please log in to access the dashboard';
+        notification.classList.add('error');
+        notification.classList.remove('hidden');
+        setTimeout(() => window.location.href = 'login.html', 2000);
+        return;
+      }
+
+      const isCashier = user.role.toLowerCase() === 'cashier';
+      if (!isCashier) {
+        console.log('User is not Cashier, redirecting to:', user.role.toLowerCase() === 'admin' ? 'adminDashboard.html' : 'login.html');
+        notification.textContent = user.role.toLowerCase() === 'admin' ? 'Access denied: Admins use Admin Dashboard' : 'Access denied: Cashiers only';
+        notification.classList.add('error');
+        notification.classList.remove('hidden');
+        setTimeout(() => window.location.href = user.role.toLowerCase() === 'admin' ? 'adminDashboard.html' : 'login.html', 2000);
+        return;
+      }
+
+      document.getElementById('user-greeting').textContent = `Welcome, ${user.username}`;
+
+      document.getElementById('logout-btn').addEventListener('click', () => {
+        console.log('Logging out, clearing sessionStorage');
+        sessionStorage.removeItem('user');
+        window.location.href = 'login.html';
+      });
+
+      const sellModal = document.getElementById('sell-modal');
+      const viewModal = document.getElementById('view-modal');
+      const sellSubmit = document.getElementById('sell-submit');
+      const sellCancel = document.getElementById('sell-cancel');
+      const viewClose = document.getElementById('view-close');
+      const itemTableBody = document.getElementById('item-table-body');
+      const itemLoading = document.getElementById('item-loading');
+
+      function showNotification(message, isSuccess) {
+        notification.textContent = message;
+        notification.classList.remove('error', 'success');
+        notification.classList.add(isSuccess ? 'success' : 'error');
+        notification.classList.remove('hidden');
+        setTimeout(() => notification.classList.add('hidden'), 3000);
+      }
+
+      function closeModal(modal) {
+        console.log('Closing modal:', modal.id);
+        modal.classList.add('hidden');
+        if (modal.id === 'sell-modal') {
+          sellForm.dataset.active = 'false';
+          document.getElementById('sell-quantity').classList.remove('error-input');
+        }
+      }
+
+      async function fetchItems() {
+        itemLoading.classList.remove('hidden');
+        try {
+          console.log('Fetching items...');
+          const response = await fetch('http://localhost:8080/PahanaEduService/api/items', {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+          });
+          const items = await response.json();
+          itemLoading.classList.add('hidden');
+          itemTableBody.innerHTML = '';
+          if (!items || items.length === 0) {
+            itemTableBody.innerHTML = '<tr><td colspan="9" class="p-2 text-muted">No items found</td></tr>';
+          } else {
+            items.forEach(item => {
+              const sanitizedTitle = item.title ? item.title.trim() : 'Untitled';
+              itemTableBody.innerHTML += `
+                <tr>
+                  <td class="p-2">${item.id}</td>
+                  <td class="p-2">${sanitizedTitle}</td>
+                  <td class="p-2">${item.author || ''}</td>
+                  <td class="p-2">${item.description || ''}</td>
+                  <td class="p-2">Rs. ${item.price.toFixed(2)}</td>
+                  <td class="p-2">${item.stock_qty}</td>
+                  <td class="p-2">${item.image_url ? `<img src="http://localhost:8080/PahanaEduService${item.image_url}" alt="${sanitizedTitle}" class="h-10 w-10 object-cover rounded">` : ''}</td>
+                  <td class="p-2">${new Date(item.added_at).toLocaleString()}</td>
+                  <td class="p-2">
+                    <button data-id="${item.id}" data-title="${sanitizedTitle}" data-price="${item.price}" data-stock_qty="${item.stock_qty}" class="btn-primary text-white px-2 py-1 rounded mr-2 sell-item">Sell</button>
+                    <button data-id="${item.id}" data-title="${sanitizedTitle}" data-author="${item.author || ''}" data-description="${item.description || ''}" data-price="${item.price}" data-stock_qty="${item.stock_qty}" data-image_url="${item.image_url || ''}" data-added_at="${new Date(item.added_at).toLocaleString()}" class="btn-warning text-white px-2 py-1 rounded view-item">View</button>
+                  </td>
+                </tr>
+              `;
+            });
+
+            document.querySelectorAll('.sell-item').forEach(btn => {
+              btn.addEventListener('click', () => {
+                console.log('Opening Sell Item modal for ID:', btn.dataset.id);
+                document.getElementById('item-title').value = btn.dataset.title;
+                document.getElementById('item-price').value = `Rs. ${parseFloat(btn.dataset.price).toFixed(2)}`;
+                document.getElementById('item-stock_qty').value = btn.dataset.stock_qty;
+                document.getElementById('sell-quantity').value = '';
+                sellModal.classList.remove('hidden');
+                sellSubmit.dataset.id = btn.dataset.id;
+                sellSubmit.dataset.stock_qty = btn.dataset.stock_qty;
+                sellForm.dataset.active = 'true';
+              });
+            });
+
+            document.querySelectorAll('.view-item').forEach(btn => {
+              btn.addEventListener('click', () => {
+                console.log('Opening View Item modal for ID:', btn.dataset.id);
+                document.getElementById('view-details').innerHTML = `
+                  <p><strong>Title:</strong> ${btn.dataset.title}</p>
+                  <p><strong>Author:</strong> ${btn.dataset.author}</p>
+                  <p><strong>Description:</strong> ${btn.dataset.description}</p>
+                  <p><strong>Price:</strong> Rs. ${parseFloat(btn.dataset.price).toFixed(2)}</p>
+                  <p><strong>Stock Quantity:</strong> ${btn.dataset.stock_qty}</p>
+                  <p><strong>Image:</strong> ${btn.dataset.image_url ? `<img src="http://localhost:8080/PahanaEduService${btn.dataset.image_url}" alt="${btn.dataset.title}" class="h-20 w-20 object-cover rounded mt-2">` : 'None'}</p>
+                  <p><strong>Added At:</strong> ${btn.dataset.added_at}</p>
+                `;
+                viewModal.classList.remove('hidden');
+              });
+            });
+          }
+        } catch (error) {
+          console.error('Error fetching items:', error);
+          itemLoading.classList.add('hidden');
+          itemTableBody.innerHTML = '<tr><td colspan="9" class="p-2 error">Error loading items</td></tr>';
+          showNotification('Error loading items', false);
+        }
+      }
+
+      sellForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        console.log('Sell form submission triggered, modal visible:', !sellModal.classList.contains('hidden'));
+
+        if (sellModal.classList.contains('hidden') || sellForm.dataset.active !== 'true') {
+          showNotification('Form cannot be submitted while modal is closed', false);
+          console.error('Form submitted while modal is hidden or inactive');
+          return;
+        }
+
+        const quantityInput = document.getElementById('sell-quantity');
+        const quantity = parseInt(quantityInput.value);
+        const availableStock = parseInt(sellSubmit.dataset.stock_qty);
+        const itemId = sellSubmit.dataset.id;
+
+        if (!quantityInput) {
+          showNotification('Quantity field is missing', false);
+          console.error('Quantity input missing');
+          return;
+        }
+
+        quantityInput.classList.remove('error-input');
+
+        if (isNaN(quantity) || quantity <= 0) {
+          showNotification('Please enter a valid quantity', false);
+          quantityInput.classList.add('error-input');
+          quantityInput.focus();
+          return;
+        }
+
+        if (quantity > availableStock) {
+          showNotification(`Cannot sell more than available stock (${availableStock})`, false);
+          quantityInput.classList.add('error-input');
+          quantityInput.focus();
+          return;
+        }
+
+        sellSubmit.disabled = true;
+
+        try {
+          console.log('Sending sell request for item ID:', itemId, 'Quantity:', quantity);
+          const response = await fetch(`http://localhost:8080/PahanaEduService/api/items/sell?id=${itemId}&quantity=${quantity}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+          });
+          const responseData = await response.json();
+
+          if (response.ok) {
+            showNotification(responseData.message || 'Item sold successfully', true);
+            closeModal(sellModal);
+            fetchItems();
+          } else {
+            showNotification(responseData.error || 'Failed to sell item', false);
+          }
+        } catch (error) {
+          console.error('Error during sell:', error);
+          showNotification('Error connecting to server', false);
+        } finally {
+          sellSubmit.disabled = false;
+        }
+      });
+
+      sellCancel.addEventListener('click', () => closeModal(sellModal));
+      viewClose.addEventListener('click', () => closeModal(viewModal));
+
+      sellForm.dataset.active = 'false';
+      fetchItems();
+    });
+  </script>
+</body>
+</html>

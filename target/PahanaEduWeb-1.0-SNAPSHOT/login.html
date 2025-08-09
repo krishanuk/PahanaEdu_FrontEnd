@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bookshop Management System - Login</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #F5F6FA;
+    }
+    .text-primary {
+      color: #2D3436;
+    }
+    .text-muted {
+      color: #7F8C8D;
+    }
+    .btn-primary {
+      background-color: #2ECC71;
+    }
+    .btn-primary:hover {
+      background-color: #27AE60;
+    }
+    .card {
+      background-color: #FFFFFF;
+    }
+    .error {
+      color: #E74C3C;
+    }
+  </style>
+</head>
+<body class="flex items-center justify-center min-h-screen">
+  <div class="card p-8 rounded-lg shadow-md w-full max-w-md">
+    <img src="images/pahanaEduLogo.png" alt="Pahana Edu Logo" width="150" class="mx-auto mb-6">
+    <h2 class="text-2xl font-bold text-primary text-center mb-6">Login to Bookshop System</h2>
+    <div id="error-message" class="hidden error text-center mb-4"></div>
+    <div>
+      <div class="mb-4">
+        <label for="username" class="block text-primary font-semibold mb-2">Username</label>
+        <input type="text" id="username" class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-[#2C3E94]" placeholder="Enter username">
+      </div>
+      <div class="mb-6">
+        <label for="password" class="block text-primary font-semibold mb-2">Password</label>
+        <input type="password" id="password" class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-[#2C3E94]" placeholder="Enter password">
+      </div>
+      <button id="login-btn" class="btn-primary text-white w-full py-2 rounded hover:bg-[#27AE60]">Login</button>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('login-btn').addEventListener('click', async () => {
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const errorMessage = document.getElementById('error-message');
+
+      if (!username || !password) {
+        errorMessage.textContent = 'Please enter both username and password';
+        errorMessage.classList.remove('hidden');
+        return;
+      }
+
+      try {
+        const response = await fetch('http://localhost:8080/PahanaEduService/api/users/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          // Save login session
+          sessionStorage.setItem('user', JSON.stringify({ username, role: data.role }));
+
+          // Redirect based on role
+          if (data.role === 'admin') {
+            window.location.href = 'adminDashboard.html';
+          } else if (data.role === 'cashier') {
+            window.location.href = 'cashierDashboard.html';
+          } else {
+            errorMessage.textContent = 'Unknown role. Contact administrator.';
+            errorMessage.classList.remove('hidden');
+          }
+        } else {
+          errorMessage.textContent = data.error || 'Login failed';
+          errorMessage.classList.remove('hidden');
+        }
+      } catch (error) {
+        errorMessage.textContent = 'Error connecting to server';
+        errorMessage.classList.remove('hidden');
+      }
+    });
+  </script>
+</body>
+</html>

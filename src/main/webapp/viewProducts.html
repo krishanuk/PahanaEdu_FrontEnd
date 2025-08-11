@@ -94,7 +94,7 @@
   <!-- Header -->
   <header class="header flex items-center justify-between p-4">
     <div class="flex items-center">
-      <a href="http://localhost:8080/PahanaEduWeb/adminDashboard.html"><img src="images/pahanaEduLogo.png" alt="Pahana Edu Logo" width="120" class="mr-4"></a>
+      <a href="/PahanaEduWeb/cashierDashboard.html"><img src="/PahanaEduWeb/images/pahanaEduLogo.png" alt="Pahana Edu Logo" width="120" class="mr-4"></a>
       <h1 class="text-xl font-bold text-primary">Bookshop Management System</h1>
     </div>
     <div class="flex items-center">
@@ -107,13 +107,14 @@
     <!-- Sidebar -->
     <div class="sidebar w-64 text-white p-4 fixed h-full md:w-64 md:h-full md:fixed">
       <nav>
-        <a href="adminDashboard.html" class="block py-2 px-4 rounded hover:text-white mb-2">Dashboard</a>
-        <a href="userManagement.html" id="user-management-link" class="block py-2 px-4 rounded hover:text-white mb-2 hidden">User Management</a>
-        <a href="customerManagement.html" class="block py-2 px-4 rounded hover:text-white mb-2">Customer Management</a>
-        <a href="itemManagement.html" class="block py-2 px-4 rounded hover:text-white mb-2">Item Management</a>
-        <a href="bookCatalog.html" class="block py-2 px-4 rounded hover:text-white mb-2 bg-[#2ECC71]">Shopping Cart</a>
-        <a href="#order-management" class="block py-2 px-4 rounded hover:text-white mb-2">Order Management</a>
-        <a href="#billing-system" class="block py-2 px-4 rounded hover:text-white mb-2">Billing System</a>
+        <a href="/PahanaEduWeb/cashierDashboard.html" class="block py-2 px-4 rounded hover:text-white mb-2">Dashboard</a>
+        <a href="/PahanaEduWeb/userManagement.html" id="user-management-link" class="block py-2 px-4 rounded hover:text-white mb-2 hidden">User Management</a>
+        <a href="/PahanaEduWeb/customerManagement.html" class="block py-2 px-4 rounded hover:text-white mb-2">Customer Management</a>
+        <a href="/PahanaEduWeb/itemManagement.html" class="block py-2 px-4 rounded hover:text-white mb-2">Item Management</a>
+        <a href="/PahanaEduWeb/bookCatalog.html" class="block py-2 px-4 rounded hover:text-white mb-2 bg-[#2ECC71]">Book Catalog</a>
+        <a href="/PahanaEduWeb/cart.html" class="block py-2 px-4 rounded hover:text-white mb-2">Shopping Cart</a>
+        <a href="/PahanaEduWeb/orderManagement.html" class="block py-2 px-4 rounded hover:text-white mb-2">Order Management</a>
+        <a href="/PahanaEduWeb/billingSystem.html" class="block py-2 px-4 rounded hover:text-white mb-2">Billing System</a>
       </nav>
     </div>
     <!-- Main Content -->
@@ -124,7 +125,7 @@
         <div class="card p-6 rounded-lg">
           <div class="flex justify-between mb-4">
             <input id="search-input" type="text" placeholder="Search by title or author" class="w-1/2 md:w-1/3 p-3 border rounded-lg focus:ring-2 focus:ring-[#2C3E94]">
-            <a href="cart.html" class="btn-primary text-white px-4 py-2 rounded">View Cart (<span id="cart-count">0</span>)</a>
+            <a href="/PahanaEduWeb/cart.html" class="btn-primary text-white px-4 py-2 rounded">View Cart (<span id="cart-count">0</span>)</a>
           </div>
           <div id="book-loading" class="text-muted mb-4 hidden">Loading books...</div>
           <div id="book-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
@@ -134,7 +135,7 @@
   </div>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      const API_BASE = "http://localhost:8080/PahanaEduService/api/items";
+      const API_BASE = "http://localhost:8080/PahanaEduService/api";
       const notification = document.getElementById('notification');
       const bookGrid = document.getElementById('book-grid');
       const bookLoading = document.getElementById('book-loading');
@@ -144,10 +145,10 @@
       // Role-based access control
       const user = JSON.parse(sessionStorage.getItem('user'));
       console.log('sessionStorage user:', user);
-      if (!user || !user.role) {
+      if (!user || !user.role || !user.username) {
         console.log('No user or role in sessionStorage, redirecting to login');
-        showNotification('Please log in to access the dashboard', false);
-        setTimeout(() => window.location.href = 'login.html', 2000);
+        showNotification('Please log in to access the book catalog', false);
+        setTimeout(() => window.location.href = '/PahanaEduWeb/login.html', 2000);
         return;
       }
 
@@ -155,7 +156,7 @@
       if (role !== 'admin' && role !== 'cashier') {
         console.log(`User role ${role} is not authorized, redirecting to login.html`);
         showNotification('Access denied: Unknown role', false);
-        setTimeout(() => window.location.href = 'login.html', 2000);
+        setTimeout(() => window.location.href = '/PahanaEduWeb/login.html', 2000);
         return;
       }
 
@@ -164,6 +165,7 @@
 
       // Notification helper
       function showNotification(message, isSuccess) {
+        console.log(`Notification: ${message}, Success: ${isSuccess}`);
         notification.textContent = message;
         notification.classList.remove('error', 'success');
         notification.classList.add(isSuccess ? 'success' : 'error');
@@ -171,26 +173,83 @@
         setTimeout(() => notification.classList.add('hidden'), 3000);
       }
 
-      // Cart management
-      function loadCart() {
-        const cart = JSON.parse(localStorage.getItem('cart')) || [];
-        cartCount.textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
-        return cart;
+      // Get or create cart
+      async function getOrCreateCart() {
+        let cartId = sessionStorage.getItem('cartId');
+        if (cartId) {
+          console.log('Using existing cartId from sessionStorage:', cartId);
+          try {
+            const response = await fetch(`${API_BASE}/carts/${cartId}`, {
+              method: 'GET',
+              headers: { 'Content-Type': 'application/json' }
+            });
+            if (response.ok) {
+              const cart = await response.json();
+              console.log('Cart retrieved:', cart);
+              return { id: cart.id };
+            } else {
+              console.log('Cart not found, clearing sessionStorage cartId');
+              sessionStorage.removeItem('cartId');
+            }
+          } catch (error) {
+            console.error('Error fetching cart:', error);
+            sessionStorage.removeItem('cartId');
+          }
+        }
+
+        console.log('Creating new cart');
+        try {
+          const createResponse = await fetch(`${API_BASE}/carts`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({})
+          });
+          if (!createResponse.ok) throw new Error(`Failed to create cart: ${createResponse.status} ${createResponse.statusText}`);
+          const result = await createResponse.json();
+          cartId = result.id;
+          sessionStorage.setItem('cartId', cartId);
+          console.log('Cart created, cartId:', cartId);
+          return { id: cartId };
+        } catch (error) {
+          console.error('Error creating cart:', error);
+          showNotification(`Error loading cart: ${error.message}`, false);
+          return null;
+        }
       }
 
-      function saveCart(cart) {
-        localStorage.setItem('cart', JSON.stringify(cart));
-        cartCount.textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
+      // Update cart count
+      async function updateCartCount() {
+        try {
+          const cart = await getOrCreateCart();
+          if (!cart) {
+            cartCount.textContent = '0';
+            return;
+          }
+          const response = await fetch(`${API_BASE}/cart-items/cart/${cart.id}`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+          });
+          if (!response.ok) throw new Error(`Failed to fetch cart items: ${response.status} ${response.statusText}`);
+          const cartItems = await response.json();
+          console.log('Cart items for count:', cartItems);
+          const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+          cartCount.textContent = totalItems;
+        } catch (error) {
+          console.error('Error updating cart count:', error);
+          cartCount.textContent = '0';
+          showNotification(`Error updating cart count: ${error.message}`, false);
+        }
       }
 
       // Fetch and display books
       async function fetchBooks() {
         bookLoading.classList.remove('hidden');
         try {
-          const response = await fetch(API_BASE, {
+          const response = await fetch(`${API_BASE}/items`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' }
           });
+          if (!response.ok) throw new Error(`Failed to fetch books: ${response.status} ${response.statusText}`);
           const books = await response.json();
           bookLoading.classList.add('hidden');
           renderBooks(books);
@@ -198,7 +257,7 @@
           console.error('Error fetching books:', error);
           bookLoading.classList.add('hidden');
           bookGrid.innerHTML = '<p class="text-muted">Error loading books</p>';
-          showNotification('Error loading books', false);
+          showNotification(`Error loading books: ${error.message}`, false);
         }
       }
 
@@ -227,10 +286,9 @@
 
         // Add to cart event listeners
         document.querySelectorAll('.add-to-cart').forEach(btn => {
-          btn.addEventListener('click', () => {
+          btn.addEventListener('click', async () => {
             const id = btn.dataset.id;
             const title = btn.dataset.title;
-            const price = parseFloat(btn.dataset.price);
             const stock = parseInt(btn.dataset.stock);
             const quantityInput = btn.parentElement.querySelector('.quantity-input');
             const quantity = parseInt(quantityInput.value);
@@ -240,20 +298,51 @@
               return;
             }
 
-            let cart = loadCart();
-            const existingItem = cart.find(item => item.id === id);
-            if (existingItem) {
-              const newQuantity = existingItem.quantity + quantity;
-              if (newQuantity > stock) {
-                showNotification(`Cannot add ${newQuantity} of ${title}. Only ${stock} in stock.`, false);
+            try {
+              const cart = await getOrCreateCart();
+              if (!cart) {
+                showNotification('Failed to access cart', false);
                 return;
               }
-              existingItem.quantity = newQuantity;
-            } else {
-              cart.push({ id, title, price, quantity, stock });
+
+              // Check if item already exists in cart
+              const cartItemsResponse = await fetch(`${API_BASE}/cart-items/cart/${cart.id}`, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' }
+              });
+              if (!cartItemsResponse.ok) throw new Error(`Failed to fetch cart items: ${cartItemsResponse.status} ${cartItemsResponse.statusText}`);
+              const cartItems = await cartItemsResponse.json();
+              const existingItem = cartItems.find(item => item.itemId === id);
+
+              if (existingItem) {
+                const newQuantity = existingItem.quantity + quantity;
+                if (newQuantity > stock) {
+                  showNotification(`Cannot add ${newQuantity} of ${title}. Only ${stock} in stock.`, false);
+                  return;
+                }
+                // Update existing item
+                const updateResponse = await fetch(`${API_BASE}/cart-items/${existingItem.id}`, {
+                  method: 'PUT',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ id: existingItem.id, itemId: id, cartId: cart.id, quantity: newQuantity })
+                });
+                if (!updateResponse.ok) throw new Error(`Failed to update item: ${updateResponse.status} ${updateResponse.statusText}`);
+                showNotification(`${quantity} x ${title} added to cart`, true);
+              } else {
+                // Add new item
+                const addResponse = await fetch(`${API_BASE}/cart-items`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ cartId: cart.id, itemId: id, quantity })
+                });
+                if (!addResponse.ok) throw new Error(`Failed to add item: ${addResponse.status} ${addResponse.statusText}`);
+                showNotification(`${quantity} x ${title} added to cart`, true);
+              }
+              updateCartCount();
+            } catch (error) {
+              console.error('Error adding to cart:', error);
+              showNotification(`Error adding to cart: ${error.message}`, false);
             }
-            saveCart(cart);
-            showNotification(`${quantity} x ${title} added to cart`, true);
           });
         });
       }
@@ -275,11 +364,12 @@
       document.getElementById('logout-btn').addEventListener('click', () => {
         console.log('Logging out, clearing sessionStorage');
         sessionStorage.removeItem('user');
-        window.location.href = 'login.html';
+        sessionStorage.removeItem('cartId');
+        window.location.href = '/PahanaEduWeb/login.html';
       });
 
       // Initial load
-      loadCart();
+      updateCartCount();
       fetchBooks();
     });
   </script>

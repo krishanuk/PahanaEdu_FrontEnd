@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bookshop Management System - Shopping Cart</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: #F5F6FA; /* Light Gray */
+    }
+    .sidebar {
+      background: linear-gradient(to bottom, #2C3E94, #1A2A6C); /* Royal Blue gradient */
+      transition: all 0.3s ease;
+    }
+    .sidebar a:hover {
+      background-color: #2ECC71; /* Emerald Green */
+      transform: translateX(5px);
+    }
+    .card {
+      background-color: #FFFFFF; /* White */
+      border: 1px solid rgba(44, 62, 148, 0.1);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      transition: transform 0.2s ease;
+    }
+    .card:hover {
+      transform: translateY(-2px);
+    }
+    .text-primary {
+      color: #2D3436; /* Charcoal */
+    }
+    .text-muted {
+      color: #7F8C8D; /* Mid Gray */
+    }
+    .btn-primary {
+      background: linear-gradient(to right, #2ECC71, #27AE60); /* Emerald Green gradient */
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .btn-danger {
+      background-color: #E74C3C; /* Crimson Red */
+    }
+    .btn-danger:hover {
+      background-color: #C0392B;
+    }
+    .btn-warning {
+      background-color: #F1C40F; /* Amber Yellow */
+    }
+    .btn-warning:hover {
+      background-color: #D4AC0D;
+    }
+    .header {
+      background-color: #FFFFFF;
+      border-bottom: 1px solid rgba(44, 62, 148, 0.1);
+    }
+    section {
+      animation: fadeIn 0.5s ease-in-out;
+    }
+    .error {
+      color: #E74C3C; /* Crimson Red */
+      background-color: rgba(231, 76, 60, 0.1);
+      border: 1px solid #E74C3C;
+    }
+    .success {
+      color: #2ECC71; /* Emerald Green */
+      background-color: rgba(46, 204, 113, 0.1);
+      border: 1px solid #2ECC71;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border: 2px solid #2C3E94; /* Royal Blue */
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+      }
+      .main-content {
+        margin-left: 0;
+      }
+    }
+  </style>
+</head>
+<body class="flex flex-col min-h-screen">
+  <!-- Header -->
+  <header class="header flex items-center justify-between p-4">
+    <div class="flex items-center">
+      <a href="/PahanaEduWeb/cashierDashboard.html"><img src="/PahanaEduWeb/images/pahanaEduLogo.png" alt="Pahana Edu Logo" width="120" class="mr-4"></a>
+      <h1 class="text-xl font-bold text-primary">Bookshop Management System</h1>
+    </div>
+    <div class="flex items-center">
+      <span id="user-greeting" class="text-primary mr-4"></span>
+      <button id="logout-btn" class="btn-primary text-white px-4 py-2 rounded">Logout</button>
+    </div>
+  </header>
+  <div id="notification" class="hidden text-center m-4 p-2 rounded text-sm"></div>
+  <div class="flex flex-1">
+    <!-- Sidebar -->
+    <div class="sidebar w-64 text-white p-4 fixed h-full md:w-64 md:h-full md:fixed">
+      <nav>
+        <a href="/PahanaEduWeb/cashierDashboard.html" class="block py-2 px-4 rounded hover:text-white mb-2">Dashboard</a>
+        
+
+
+        <a href="/PahanaEduWeb/cart.html" class="block py-2 px-4 rounded hover:text-white mb-2 bg-[#2ECC71]">Shopping Cart</a>
+
+      </nav>
+    </div>
+    <!-- Main Content -->
+    <div class="flex-1 p-6 ml-0 md:ml-64 main-content">
+      <!-- Shopping Cart Section -->
+      <section id="cart" class="mb-8">
+        <h2 class="text-2xl font-bold text-primary mb-4">Shopping Cart</h2>
+        <div class="card p-6 rounded-lg">
+          <div id="cart-loading" class="text-muted mb-4 hidden">Loading cart...</div>
+          <table class="w-full">
+            <thead class="bg-gray-200">
+              <tr>
+                <th class="p-2 text-left">Image</th>
+                <th class="p-2 text-left">Title</th>
+                <th class="p-2 text-left">Price</th>
+                <th class="p-2 text-left">Quantity</th>
+                <th class="p-2 text-left">Total</th>
+                <th class="p-2 text-left">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="cart-table-body"></tbody>
+          </table>
+          <div class="mt-4 flex justify-between items-center">
+            <div class="text-primary font-semibold">
+              Subtotal: Rs. <span id="cart-subtotal">0.00</span>
+            </div>
+            <a href="/PahanaEduWeb/billingSystem.html" class="btn-primary text-white px-4 py-2 rounded">Proceed to Checkout</a>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const API_BASE = "http://localhost:8080/PahanaEduService/api";
+      const notification = document.getElementById('notification');
+      const cartTableBody = document.getElementById('cart-table-body');
+      const cartLoading = document.getElementById('cart-loading');
+      const cartSubtotal = document.getElementById('cart-subtotal');
+
+      // Role-based access control
+      const user = JSON.parse(sessionStorage.getItem('user'));
+      console.log('sessionStorage user:', user);
+      if (!user || !user.role || !user.username) {
+        console.log('No user, role, or username in sessionStorage, redirecting to login');
+        showNotification('Please log in to access the cart', false);
+        setTimeout(() => window.location.href = '/PahanaEduWeb/login.html', 2000);
+        return;
+      }
+
+      const role = user.role.toLowerCase();
+      if (role !== 'admin' && role !== 'cashier') {
+        console.log(`User role ${role} is not authorized, redirecting to login.html`);
+        showNotification('Access denied: Unknown role', false);
+        setTimeout(() => window.location.href = '/PahanaEduWeb/login.html', 2000);
+        return;
+      }
+
+      document.getElementById('user-greeting').textContent = `Welcome, ${user.username}`;
+
+      // Notification helper
+      function showNotification(message, isSuccess) {
+        console.log(`Notification: ${message}, Success: ${isSuccess}`);
+        notification.textContent = message;
+        notification.classList.remove('error', 'success');
+        notification.classList.add(isSuccess ? 'success' : 'error');
+        notification.classList.remove('hidden');
+        setTimeout(() => notification.classList.add('hidden'), 3000);
+      }
+
+      // Get or create cart
+      async function getOrCreateCart() {
+        let cartId = sessionStorage.getItem('cartId');
+        console.log('Checking for existing cartId:', cartId);
+        if (cartId) {
+          try {
+            const response = await fetch(`${API_BASE}/carts/${cartId}`, {
+              method: 'GET',
+              headers: { 'Content-Type': 'application/json' }
+            });
+            if (response.ok) {
+              const cart = await response.json();
+              console.log('Cart retrieved:', cart);
+              return { id: cart.id };
+            } else {
+              console.log('Cart not found, clearing sessionStorage cartId');
+              sessionStorage.removeItem('cartId');
+            }
+          } catch (error) {
+            console.error('Error fetching cart:', error);
+            sessionStorage.removeItem('cartId');
+          }
+        }
+
+        console.log('Creating new cart');
+        try {
+          const createResponse = await fetch(`${API_BASE}/carts`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ createdAt: null })
+          });
+          if (!createResponse.ok) {
+            const errorBody = await createResponse.text();
+            console.error('Create cart response:', errorBody);
+            throw new Error(`Failed to create cart: ${createResponse.status} ${createResponse.statusText}, Body: ${errorBody}`);
+          }
+          const result = await createResponse.json();
+          cartId = result.id;
+          sessionStorage.setItem('cartId', cartId);
+          console.log('Cart created, cartId:', cartId);
+          return { id: cartId };
+        } catch (error) {
+          console.error('Error creating cart:', error);
+          showNotification(`Error loading cart: ${error.message}`, false);
+          return null;
+        }
+      }
+
+      // Fetch item details
+      async function fetchItemDetails(itemId) {
+        console.log('Fetching item details for itemId:', itemId);
+        try {
+          const response = await fetch(`${API_BASE}/items/${itemId}`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+          });
+          if (!response.ok) throw new Error(`Failed to fetch item ${itemId}: ${response.status} ${response.statusText}`);
+          const item = await response.json();
+          console.log('Item details:', item);
+          return item;
+        } catch (error) {
+          console.error('Error fetching item:', error);
+          showNotification(`Error fetching item ${itemId}: ${error.message}`, false);
+          return null;
+        }
+      }
+
+      // Fetch and display cart items
+      async function fetchCartItems() {
+        cartLoading.classList.remove('hidden');
+        try {
+          const cart = await getOrCreateCart();
+          if (!cart) {
+            cartLoading.classList.add('hidden');
+            cartTableBody.innerHTML = '<tr><td colspan="6" class="p-2 text-muted">Failed to load cart</td></tr>';
+            cartSubtotal.textContent = '0.00';
+            return;
+          }
+          console.log('Fetching cart items for cartId:', cart.id);
+          const response = await fetch(`${API_BASE}/cart-items/cart/${cart.id}`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+          });
+          if (!response.ok) throw new Error(`Failed to fetch cart items: ${response.status} ${response.statusText}`);
+          const cartItems = await response.json();
+          console.log('Cart items retrieved:', cartItems);
+          cartTableBody.innerHTML = '';
+          let subtotal = 0;
+
+          if (!cartItems || cartItems.length === 0) {
+            cartTableBody.innerHTML = '<tr><td colspan="6" class="p-2 text-muted">Cart is empty</td></tr>';
+            cartSubtotal.textContent = '0.00';
+            cartLoading.classList.add('hidden');
+            return;
+          }
+
+          for (const item of cartItems) {
+            const itemDetails = await fetchItemDetails(item.itemId);
+            if (!itemDetails) continue;
+            const total = item.quantity * itemDetails.price;
+            subtotal += total;
+            cartTableBody.innerHTML += `
+              <tr>
+                <td class="p-2"><img src="http://localhost:8080/PahanaEduService/${itemDetails.imageUrl}" alt="${itemDetails.title}" class="h-16 w-16 object-cover rounded"/></td>
+                <td class="p-2">${itemDetails.title}</td>
+                <td class="p-2">Rs. ${itemDetails.price.toFixed(2)}</td>
+                <td class="p-2">
+                  <input type="number" min="1" max="${itemDetails.stockQty}" value="${item.quantity}" class="quantity-input w-16 p-2 border rounded-lg focus:ring-2 focus:ring-[#2C3E94]" data-id="${item.id}" data-item-id="${item.itemId}" data-stock="${itemDetails.stockQty}">
+                </td>
+                <td class="p-2">Rs. ${total.toFixed(2)}</td>
+                <td class="p-2">
+                  <button class="remove-item btn-danger text-white px-2 py-1 rounded" data-id="${item.id}" data-title="${itemDetails.title}">Remove</button>
+                </td>
+              </tr>
+            `;
+          }
+
+          cartSubtotal.textContent = subtotal.toFixed(2);
+          cartLoading.classList.add('hidden');
+
+          // Event listeners for quantity update
+          document.querySelectorAll('.quantity-input').forEach(input => {
+            input.addEventListener('change', async () => {
+              const id = input.dataset.id;
+              const itemId = input.dataset.itemId;
+              const quantity = parseInt(input.value);
+              const stock = parseInt(input.dataset.stock);
+
+              if (quantity < 1 || quantity > stock) {
+                showNotification(`Quantity must be between 1 and ${stock}`, false);
+                input.value = input.defaultValue; // Reset to original
+                return;
+              }
+
+              console.log('Updating quantity for cartItemId:', id, 'to:', quantity);
+              try {
+                const response = await fetch(`${API_BASE}/cart-items/${id}`, {
+                  method: 'PUT',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ id, itemId, cartId: cart.id, quantity })
+                });
+                if (response.ok) {
+                  showNotification('Quantity updated', true);
+                  input.defaultValue = quantity; // Update default value
+                  fetchCartItems();
+                } else {
+                  const errorData = await response.json();
+                  showNotification(errorData.error || `Failed to update quantity: ${response.status}`, false);
+                  input.value = input.defaultValue;
+                }
+              } catch (error) {
+                console.error('Error updating quantity:', error);
+                showNotification(`Error updating quantity: ${error.message}`, false);
+                input.value = input.defaultValue;
+              }
+            });
+          });
+
+          // Event listeners for remove item
+          document.querySelectorAll('.remove-item').forEach(btn => {
+            btn.addEventListener('click', async () => {
+              const id = btn.dataset.id;
+              const title = btn.dataset.title;
+              console.log('Removing cartItemId:', id);
+              try {
+                const response = await fetch(`${API_BASE}/cart-items/${id}`, {
+                  method: 'DELETE',
+                  headers: { 'Content-Type': 'application/json' }
+                });
+                if (response.ok || response.status === 204) {
+                  showNotification(`${title} removed from cart`, true);
+                  fetchCartItems();
+                } else {
+                  const errorData = await response.json();
+                  showNotification(errorData.error || `Failed to remove item: ${response.status}`, false);
+                }
+              } catch (error) {
+                console.error('Error removing item:', error);
+                showNotification(`Error removing item: ${error.message}`, false);
+              }
+            });
+          });
+        } catch (error) {
+          console.error('Error fetching cart items:', error);
+          cartLoading.classList.add('hidden');
+          cartTableBody.innerHTML = '<tr><td colspan="6" class="p-2 text-muted">Error loading cart</td></tr>';
+          showNotification(`Error loading cart: ${error.message}`, false);
+        }
+      }
+
+      // Logout
+      document.getElementById('logout-btn').addEventListener('click', () => {
+        console.log('Logging out, clearing sessionStorage');
+        sessionStorage.removeItem('user');
+        sessionStorage.removeItem('cartId');
+        window.location.href = '/PahanaEduWeb/login.html';
+      });
+
+      // Initial load
+      fetchCartItems();
+    });
+  </script>
+</body>
+</html>

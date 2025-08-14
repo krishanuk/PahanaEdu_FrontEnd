@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pahana Edu — Help</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body{font-family:Inter,system-ui; background:#F5F6FA}
+    .header{background:#fff; border-bottom:1px solid rgba(44,62,148,.1)}
+    .sidebar{background:linear-gradient(to bottom,#2C3E94,#1A2A6C)}
+    .sidebar a:hover{background:#2ECC71; transform:translateX(5px)}
+    .card{background:#fff; border:1px solid rgba(44,62,148,.1); box-shadow:0 4px 6px rgba(0,0,0,.05)}
+    .text-primary{color:#2D3436}
+    .text-muted{color:#7F8C8D}
+    details > summary {cursor:pointer}
+  </style>
+</head>
+<body class="flex flex-col min-h-screen">
+  <!-- Header -->
+  <header class="header flex items-center justify-between p-4">
+    <div class="flex items-center gap-3">
+      <a href="/PahanaEduWeb/cashierDashboard.html">
+        <img src="/PahanaEduWeb/images/pahanaEduLogo.png" alt="Pahana Edu" width="120"/>
+      </a>
+      <h1 class="text-xl font-bold text-primary">Help & User Guide</h1>
+    </div>
+    <div class="flex items-center gap-3">
+      <span id="user-greeting" class="text-primary"></span>
+      <button id="logout-btn" class="px-4 py-2 rounded text-white" style="background:#27AE60">Logout</button>
+    </div>
+  </header>
+
+  <div class="flex flex-1">
+    <!-- Sidebar -->
+    <aside class="sidebar w-64 text-white p-4 fixed h-full">
+      <nav class="space-y-2">
+        <a href="/PahanaEduWeb/cashierDashboard.html" class="block py-2 px-4 rounded">Dashboard</a>
+        <a href="/PahanaEduWeb/viewProducts.html" class="block py-2 px-4 rounded">Book Catalog</a>
+        <a href="/PahanaEduWeb/itemManagement.html" class="block py-2 px-4 rounded">Item Management</a>
+        <a href="/PahanaEduWeb/help.html" class="block py-2 px-4 rounded bg-[#2ECC71]">Help</a>
+      </nav>
+    </aside>
+
+    <!-- Main -->
+    <main class="flex-1 p-6 ml-0 md:ml-64">
+      <section class="card p-6 rounded mb-6">
+        <h2 class="text-2xl font-bold text-primary mb-2">Getting Started</h2>
+        <ol class="list-decimal ml-6 text-muted">
+          <li>Login with your username & password.</li>
+          <li>Admins: use <strong>Item Management</strong> to add/update/delete books.</li>
+          <li>Cashiers: open <strong>Book Catalog</strong>, add to cart, and checkout.</li>
+          <li>Use <strong>Customer</strong> screens to add or edit customer records.</li>
+          <li>To leave the system, click <strong>Logout</strong> (see Exit below).</li>
+        </ol>
+      </section>
+
+      <section class="card p-6 rounded mb-6">
+        <h3 class="text-xl font-semibold text-primary mb-3">FAQs</h3>
+
+        <details class="mb-3">
+          <summary class="font-medium text-primary">I can’t see “Item Management”.</summary>
+          <div class="text-muted mt-2">This feature is for <strong>Admin</strong> only. Ask an admin to grant access.</div>
+        </details>
+
+        <details class="mb-3">
+          <summary class="font-medium text-primary">How do I add items to a bill?</summary>
+          <div class="text-muted mt-2">Go to <em>Book Catalog</em>, choose quantity and click <em>Add to Cart</em>. Open the cart to checkout.</div>
+        </details>
+
+        <details class="mb-3">
+          <summary class="font-medium text-primary">How do I print a bill?</summary>
+          <div class="text-muted mt-2">After checkout or bill creation, click <em>Print</em> on the bill screen to generate a PDF/printable page.</div>
+        </details>
+
+        <details class="mb-3">
+          <summary class="font-medium text-primary">Login failed.</summary>
+          <div class="text-muted mt-2">Check your username/password. If locked, wait 15 minutes or contact an admin.</div>
+        </details>
+      </section>
+
+      <section class="card p-6 rounded">
+        <h3 class="text-xl font-semibold text-primary mb-3">Keyboard & UI Tips</h3>
+        <ul class="list-disc ml-6 text-muted">
+          <li><kbd>Tab</kbd> to move between fields, <kbd>Enter</kbd> to submit forms.</li>
+          <li>Inline validation highlights fields with issues.</li>
+          <li>Use the search box on catalog or item list to filter quickly.</li>
+        </ul>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    // (Optional) greet + logout reuse
+    const user = JSON.parse(sessionStorage.getItem('user') || 'null');
+    if (user?.username) document.getElementById('user-greeting').textContent = `Welcome, ${user.username}`;
+    document.getElementById('logout-btn').addEventListener('click', () => {
+      sessionStorage.removeItem('user'); sessionStorage.removeItem('cartId');
+      window.location.href = '/PahanaEduWeb/login.html';
+    });
+  </script>
+</body>
+</html>

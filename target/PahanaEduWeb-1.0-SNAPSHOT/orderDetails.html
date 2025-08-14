@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bookshop Management System - Order Details</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: #F5F6FA; /* Light Gray */
+    }
+    .sidebar {
+      background: linear-gradient(to bottom, #2C3E94, #1A2A6C); /* Royal Blue gradient */
+      transition: all 0.3s ease;
+    }
+    .sidebar a:hover {
+      background-color: #2ECC71; /* Emerald Green */
+      transform: translateX(5px);
+    }
+    .card {
+      background-color: #FFFFFF; /* White */
+      border: 1px solid rgba(44, 62, 148, 0.1);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      transition: transform 0.2s ease;
+    }
+    .card:hover {
+      transform: translateY(-2px);
+    }
+    .text-primary {
+      color: #2D3436; /* Charcoal */
+    }
+    .text-muted {
+      color: #7F8C8D; /* Mid Gray */
+    }
+    .btn-primary {
+      background: linear-gradient(to right, #2ECC71, #27AE60); /* Emerald Green gradient */
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .btn-danger {
+      background-color: #E74C3C; /* Crimson Red */
+    }
+    .btn-danger:hover {
+      background-color: #C0392B;
+    }
+    .header {
+      background-color: #FFFFFF;
+      border-bottom: 1px solid rgba(44, 62, 148, 0.1);
+    }
+    section {
+      animation: fadeIn 0.5s ease-in-out;
+    }
+    .error {
+      color: #E74C3C; /* Crimson Red */
+      background-color: rgba(231, 76, 60, 0.1);
+      border: 1px solid #E74C3C;
+    }
+    .success {
+      color: #2ECC71; /* Emerald Green */
+      background-color: rgba(46, 204, 113, 0.1);
+      border: 1px solid #2ECC71;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border: 2px solid #2C3E94; /* Royal Blue */
+    }
+    .modal {
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+      }
+      .main-content {
+        margin-left: 0;
+      }
+    }
+    @media print {
+      .no-print {
+        display: none;
+      }
+      .print-details {
+        display: block;
+        width: 100%;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        border: 1px solid #2D3436;
+        font-size: 12pt;
+      }
+      .print-details-header {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      .print-details table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .print-details th, .print-details td {
+        border: 1px solid #2D3436;
+        padding: 8px;
+        text-align: left;
+      }
+      .print-details th {
+        background-color: #F5F6FA;
+      }
+      .print-details img {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body class="flex flex-col min-h-screen">
+  <!-- Header -->
+  <header class="header flex items-center justify-between p-4 no-print">
+    <div class="flex items-center">
+      <a href="/PahanaEduWeb/cashierDashboard.html"><img src="/PahanaEduWeb/images/pahanaEduLogo.png" alt="Pahana Edu Logo" width="120" class="mr-4"></a>
+      <h1 class="text-xl font-bold text-primary">Bookshop Management System</h1>
+    </div>
+    <div class="flex items-center">
+      <span id="user-greeting" class="text-primary mr-4"></span>
+      <button id="logout-btn" class="btn-primary text-white px-4 py-2 rounded">Logout</button>
+    </div>
+  </header>
+  <div id="notification" class="hidden text-center m-4 p-2 rounded text-sm no-print"></div>
+  <div class="flex flex-1">
+    <!-- Sidebar -->
+    <div class="sidebar w-64 text-white p-4 fixed h-full md:w-64 md:h-full md:fixed no-print">
+      <nav>
+        <a href="/PahanaEduWeb/cashierDashboard.html" class="block py-2 px-4 rounded hover:text-white mb-2">Dashboard</a>
+        <a href="/PahanaEduWeb/orderDetails.html" class="block py-2 px-4 rounded hover:text-white mb-2 bg-[#2ECC71]">Order Management</a>
+      </nav>
+    </div>
+    <!-- Main Content -->
+    <div class="flex-1 p-6 ml-0 md:ml-64 main-content">
+      <!-- Order History Section -->
+      <section id="order-history" class="mb-8">
+        <h2 class="text-2xl font-bold text-primary mb-4">Order History</h2>
+        <div class="card p-6 rounded-lg">
+          <div id="orders-loading" class="text-muted mb-4 hidden">Loading orders...</div>
+          <table class="w-full mb-4">
+            <thead class="bg-gray-200">
+              <tr>
+                <th class="p-2 text-left">Order ID</th>
+                <th class="p-2 text-left">Customer ID</th>
+                <th class="p-2 text-left">Customer Name</th>
+                <th class="p-2 text-left">Order Date</th>
+                <th class="p-2 text-left">Status</th>
+                <th class="p-2 text-left">Total</th>
+                <th class="p-2 text-left">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="orders-table-body"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </div>
+  <!-- Order Details Modal -->
+  <div id="order-details-modal" class="hidden fixed inset-0 modal flex items-center justify-center z-50 no-print">
+    <div class="card p-6 rounded-lg w-full max-w-2xl max-h-[80vh] overflow-y-auto print-details">
+      <div class="print-details-header">
+        <img src="/PahanaEduWeb/images/pahanaEduLogo.png" alt="Pahana Edu Logo" width="100" class="mx-auto">
+        <h3 class="text-lg font-semibold text-primary">Pahana Edu Bookshop - Order Details</h3>
+        <p class="text-muted">123 Book Street, Colombo, Sri Lanka</p>
+        <p class="text-muted">Phone: +94 11 123 4567</p>
+      </div>
+      <div id="order-details-loading" class="text-muted mb-4 hidden">Loading order details...</div>
+      <div id="order-details-content" class="print-details">
+        <p id="order-id" class="text-muted"></p>
+        <p id="order-customer-id" class="text-muted"></p>
+        <p id="order-customer-name" class="text-muted"></p>
+        <p id="order-date" class="text-muted"></p>
+        <p id="order-status" class="text-muted"></p>
+        <p id="order-total" class="text-muted"></p>
+        <table class="w-full mb-4">
+          <thead class="bg-gray-200">
+            <tr>
+              <th class="p-2 text-left">Image</th>
+              <th class="p-2 text-left">Title</th>
+              <th class="p-2 text-left">Quantity</th>
+              <th class="p-2 text-left">Unit Price</th>
+              <th class="p-2 text-left">Total</th>
+            </tr>
+          </thead>
+          <tbody id="order-items-table-body"></tbody>
+        </table>
+      </div>
+      <div class="flex justify-end space-x-4 no-print">
+        <button id="print-details-btn" class="btn-primary text-white px-4 py-2 rounded">Print Details</button>
+        <button id="close-modal-btn" class="btn-danger text-white px-4 py-2 rounded">Close</button>
+      </div>
+    </div>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const API_BASE = "http://localhost:8080/PahanaEduService/api";
+      const notification = document.getElementById('notification');
+      const ordersTableBody = document.getElementById('orders-table-body');
+      const ordersLoading = document.getElementById('orders-loading');
+      const orderDetailsModal = document.getElementById('order-details-modal');
+      const orderDetailsContent = document.getElementById('order-details-content');
+      const orderDetailsLoading = document.getElementById('order-details-loading');
+      const orderItemsTableBody = document.getElementById('order-items-table-body');
+      const orderId = document.getElementById('order-id');
+      const orderCustomerId = document.getElementById('order-customer-id');
+      const orderCustomerName = document.getElementById('order-customer-name');
+      const orderDate = document.getElementById('order-date');
+      const orderStatus = document.getElementById('order-status');
+      const orderTotal = document.getElementById('order-total');
+
+      // Role-based access control
+      const user = JSON.parse(sessionStorage.getItem('user'));
+      console.log('sessionStorage user:', user);
+      if (!user || !user.role || !user.username) {
+        console.log('No user, role, or username in sessionStorage, redirecting to login');
+        showNotification('Please log in to view orders', false);
+        setTimeout(() => window.location.href = '/PahanaEduWeb/login.html', 2000);
+        return;
+      }
+
+      const role = user.role.toLowerCase();
+      if (role !== 'admin' && role !== 'cashier') {
+        console.log(`User role ${role} is not authorized, redirecting to login.html`);
+        showNotification('Access denied: Unknown role', false);
+        setTimeout(() => window.location.href = '/PahanaEduWeb/login.html', 2000);
+        return;
+      }
+
+      document.getElementById('user-greeting').textContent = `Welcome, ${user.username}`;
+      //document.getElementById('user-management-link').classList.toggle('hidden', role !== 'admin');
+
+      // Notification helper
+      function showNotification(message, isSuccess) {
+        console.log(`Notification: ${message}, Success: ${isSuccess}`);
+        notification.textContent = message;
+        notification.classList.remove('error', 'success');
+        notification.classList.add(isSuccess ? 'success' : 'error');
+        notification.classList.remove('hidden');
+        setTimeout(() => notification.classList.add('hidden'), 3000);
+      }
+
+      // Verify customer if customerId exists
+      async function verifyCustomer(customerId) {
+        if (!customerId) {
+          console.log('No customerId provided, returning Guest');
+          return { id: null, username: 'Guest', fullName: null };
+        }
+        console.log('Verifying customerId:', customerId);
+        try {
+          const response = await fetch(`${API_BASE}/customers/${customerId}`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+          });
+          if (response.ok) {
+            const customer = await response.json();
+            console.log('Customer verified:', customer);
+            return {
+              id: customer.id,
+              username: customer.username || customer.fullName || `ID ${customer.id}`,
+              fullName: customer.fullName || customer.username || `ID ${customer.id}`
+            };
+          } else {
+            console.warn('Customer not found:', response.status);
+            return { id: customerId, username: `ID ${customerId}`, fullName: null };
+          }
+        } catch (error) {
+          console.error('Error verifying customer:', error);
+          return { id: customerId, username: `ID ${customerId}`, fullName: null };
+        }
+      }
+
+      // Fetch item details
+      async function fetchItemDetails(itemId) {
+        console.log('Fetching item details for itemId:', itemId);
+        try {
+          const response = await fetch(`${API_BASE}/items/${itemId}`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+          });
+          if (!response.ok) throw new Error(`Failed to fetch item ${itemId}: ${response.status} ${response.statusText}`);
+          const item = await response.json();
+          console.log('Item details:', item);
+          return item;
+        } catch (error) {
+          console.error('Error fetching item:', error);
+          showNotification(`Error fetching item ${itemId}: ${error.message}`, false);
+          return null;
+        }
+      }
+
+      // Fetch and display orders
+      async function loadOrders() {
+        ordersLoading.classList.remove('hidden');
+        try {
+          const response = await fetch(`${API_BASE}/orders`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+          });
+          if (!response.ok) throw new Error(`Failed to fetch orders: ${response.status} ${response.statusText}`);
+          const orders = await response.json();
+          console.log('Orders retrieved:', orders);
+          ordersTableBody.innerHTML = '';
+
+          if (!orders || orders.length === 0) {
+            ordersTableBody.innerHTML = '<tr><td colspan="7" class="p-2 text-muted">No orders found</td></tr>';
+            ordersLoading.classList.add('hidden');
+            return;
+          }
+
+          for (const order of orders) {
+            const customer = await verifyCustomer(order.customerId);
+            ordersTableBody.innerHTML += `
+              <tr>
+                <td class="p-2">${order.id}</td>
+                <td class="p-2">${customer.id || 'None'}</td>
+                <td class="p-2">${customer.username}</td>
+                <td class="p-2">${new Date(order.orderDate).toLocaleString()}</td>
+                <td class="p-2">${order.status}</td>
+                <td class="p-2">Rs. ${order.totalAmount.toFixed(2)}</td>
+                <td class="p-2">
+                  <button class="view-details-btn btn-primary text-white px-2 py-1 rounded" data-order-id="${order.id}">View Details</button>
+                </td>
+              </tr>
+            `;
+          }
+
+          // Add event listeners for View Details buttons
+          document.querySelectorAll('.view-details-btn').forEach(button => {
+            button.addEventListener('click', () => {
+              const orderId = button.getAttribute('data-order-id');
+              console.log('Viewing details for order:', orderId);
+              loadOrderDetails(orderId);
+            });
+          });
+
+          ordersLoading.classList.add('hidden');
+        } catch (error) {
+          console.error('Error loading orders:', error);
+          ordersLoading.classList.add('hidden');
+          ordersTableBody.innerHTML = '<tr><td colspan="7" class="p-2 text-muted">Error loading orders</td></tr>';
+          showNotification(`Error loading orders: ${error.message}`, false);
+        }
+      }
+
+      // Fetch and display order details
+      async function loadOrderDetails(orderId) {
+        orderDetailsLoading.classList.remove('hidden');
+        orderDetailsContent.classList.add('hidden');
+        orderDetailsModal.classList.remove('hidden');
+        try {
+          // Fetch order
+          const orderResponse = await fetch(`${API_BASE}/orders/${orderId}`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+          });
+          if (!orderResponse.ok) throw new Error(`Failed to fetch order ${orderId}: ${orderResponse.status} ${orderResponse.statusText}`);
+          const order = await orderResponse.json();
+          console.log('Order details:', order);
+
+          // Fetch customer
+          const customer = await verifyCustomer(order.customerId);
+
+          // Fetch order items
+          const orderItemsResponse = await fetch(`${API_BASE}/orderitems/order/${orderId}`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+          });
+          if (!orderItemsResponse.ok) throw new Error(`Failed to fetch order items for order ${orderId}: ${orderItemsResponse.status} ${orderItemsResponse.statusText}`);
+          const orderItems = await orderItemsResponse.json();
+          console.log('Order items retrieved:', orderItems);
+
+          // Populate order details
+          orderId.textContent = `Order ID: ${order.id}`;
+          orderCustomerId.textContent = `Customer ID: ${customer.id || 'None'}`;
+          orderCustomerName.textContent = `Customer Name: ${customer.username}`;
+          orderDate.textContent = `Date: ${new Date(order.orderDate).toLocaleString()}`;
+          orderStatus.textContent = `Status: ${order.status}`;
+          orderTotal.textContent = `Total: Rs. ${order.totalAmount.toFixed(2)}`;
+          orderItemsTableBody.innerHTML = '';
+
+          if (!orderItems || orderItems.length === 0) {
+            orderItemsTableBody.innerHTML = '<tr><td colspan="5" class="p-2 text-muted">No items in this order</td></tr>';
+          } else {
+            for (const item of orderItems) {
+              const itemDetails = await fetchItemDetails(item.itemId);
+              if (!itemDetails) continue;
+              const itemTotal = item.quantity * item.unitPrice;
+              const imgSrc = itemDetails.imageUrl?.startsWith('http')
+                ? itemDetails.imageUrl
+                : `http://localhost:8080/PahanaEduService/${itemDetails.imageUrl ?? 'images/placeholder.png'}`;
+              orderItemsTableBody.innerHTML += `
+                <tr>
+                  <td class="p-2"><img src="${imgSrc}" alt="${itemDetails.title}" class="h-16 w-16 object-cover rounded"
+                     onerror="this.onerror=null;this.src='/PahanaEduWeb/images/placeholder.png';"></td>
+                  <td class="p-2">${itemDetails.title}</td>
+                  <td class="p-2">${item.quantity}</td>
+                  <td class="p-2">Rs. ${item.unitPrice.toFixed(2)}</td>
+                  <td class="p-2">Rs. ${itemTotal.toFixed(2)}</td>
+                </tr>
+              `;
+            }
+          }
+
+          orderDetailsLoading.classList.add('hidden');
+          orderDetailsContent.classList.remove('hidden');
+        } catch (error) {
+          console.error('Error loading order details:', error);
+          orderDetailsLoading.classList.add('hidden');
+          orderDetailsContent.classList.add('hidden');
+          showNotification(`Error loading order details: ${error.message}`, false);
+        }
+      }
+
+      // Close modal
+      document.getElementById('close-modal-btn').addEventListener('click', () => {
+        console.log('Closing order details modal');
+        orderDetailsModal.classList.add('hidden');
+      });
+
+      // Print order details
+      document.getElementById('print-details-btn').addEventListener('click', () => {
+        console.log('Printing order details');
+        window.print();
+      });
+
+      // Logout
+      document.getElementById('logout-btn').addEventListener('click', () => {
+        console.log('Logging out, clearing sessionStorage');
+        sessionStorage.removeItem('user');
+        sessionStorage.removeItem('cartId');
+        window.location.href = '/PahanaEduWeb/login.html';
+      });
+
+      // Initial load
+      loadOrders();
+    });
+  </script>
+</body>
+</html>

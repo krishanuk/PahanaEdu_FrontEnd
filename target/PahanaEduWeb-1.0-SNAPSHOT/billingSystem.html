@@ -24,72 +24,58 @@
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
       transition: transform 0.2s ease;
     }
-    .card:hover {
-      transform: translateY(-2px);
-    }
-    .text-primary {
-      color: #2D3436; /* Charcoal */
-    }
-    .text-muted {
-      color: #7F8C8D; /* Mid Gray */
-    }
+    .card:hover { transform: translateY(-2px); }
+    .text-primary { color: #2D3436; /* Charcoal */ }
+    .text-muted { color: #7F8C8D; /* Mid Gray */ }
     .btn-primary {
-      background: linear-gradient(to right, #2ECC71, #27AE60); /* Emerald Green gradient */
+      background: linear-gradient(to right, #2ECC71, #27AE60);
       transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-    .btn-danger {
-      background-color: #E74C3C; /* Crimson Red */
-    }
-    .btn-danger:hover {
-      background-color: #C0392B;
-    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    .btn-danger { background-color: #E74C3C; }
+    .btn-danger:hover { background-color: #C0392B; }
     .header {
       background-color: #FFFFFF;
       border-bottom: 1px solid rgba(44, 62, 148, 0.1);
     }
-    section {
-      animation: fadeIn 0.5s ease-in-out;
-    }
-    .error {
-      color: #E74C3C; /* Crimson Red */
-      background-color: rgba(231, 76, 60, 0.1);
-      border: 1px solid #E74C3C;
-    }
-    .success {
-      color: #2ECC71; /* Emerald Green */
-      background-color: rgba(46, 204, 113, 0.1);
-      border: 1px solid #2ECC71;
-    }
-    input:focus, select:focus {
-      outline: none;
-      border: 2px solid #2C3E94; /* Royal Blue */
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+    section { animation: fadeIn 0.5s ease-in-out; }
+    .error { color: #E74C3C; background-color: rgba(231,76,60,0.1); border: 1px solid #E74C3C; }
+    .success { color: #2ECC71; background-color: rgba(46,204,113,0.1); border: 1px solid #2ECC71; }
+    input:focus, select:focus { outline: none; border: 2px solid #2C3E94; }
+    @keyframes fadeIn { from { opacity:0; transform: translateY(10px);} to { opacity:1; transform: translateY(0);} }
     @media (max-width: 768px) {
-      .sidebar {
-        width: 100%;
-        height: auto;
-        position: relative;
-      }
-      .main-content {
-        margin-left: 0;
-      }
+      .sidebar { width: 100%; height: auto; position: relative; }
+      .main-content { margin-left: 0; }
     }
     @media print {
-      .no-print {
-        display: none;
-      }
+      .no-print { display: none; }
       .print-bill {
         display: block;
         width: 100%;
-        page-break-after: always;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        border: 1px solid #2D3436;
+        font-size: 12pt;
+      }
+      .print-bill-header {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      .print-bill table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .print-bill th, .print-bill td {
+        border: 1px solid #2D3436;
+        padding: 8px;
+        text-align: left;
+      }
+      .print-bill th { background-color: #F5F6FA; }
+      .print-bill img { display: none; } /* Hide images in print */
+      .print-bill-footer {
+        text-align: right;
+        margin-top: 20px;
       }
     }
   </style>
@@ -106,21 +92,18 @@
       <button id="logout-btn" class="btn-primary text-white px-4 py-2 rounded">Logout</button>
     </div>
   </header>
+
   <div id="notification" class="hidden text-center m-4 p-2 rounded text-sm no-print"></div>
+
   <div class="flex flex-1">
     <!-- Sidebar -->
     <div class="sidebar w-64 text-white p-4 fixed h-full md:w-64 md:h-full md:fixed no-print">
       <nav>
         <a href="/PahanaEduWeb/cashierDashboard.html" class="block py-2 px-4 rounded hover:text-white mb-2">Dashboard</a>
-        <a href="/PahanaEduWeb/userManagement.html" id="user-management-link" class="block py-2 px-4 rounded hover:text-white mb-2 hidden">User Management</a>
-        <a href="/PahanaEduWeb/customerManagement.html" class="block py-2 px-4 rounded hover:text-white mb-2">Customer Management</a>
-        <a href="/PahanaEduWeb/itemManagement.html" class="block py-2 px-4 rounded hover:text-white mb-2">Item Management</a>
-        <a href="/PahanaEduWeb/viewProducts.html" class="block py-2 px-4 rounded hover:text-white mb-2">Book Catalog</a>
-        <a href="/PahanaEduWeb/cart.html" class="block py-2 px-4 rounded hover:text-white mb-2">Shopping Cart</a>
-        <a href="/PahanaEduWeb/orderManagement.html" class="block py-2 px-4 rounded hover:text-white mb-2">Order Management</a>
         <a href="/PahanaEduWeb/billingSystem.html" class="block py-2 px-4 rounded hover:text-white mb-2 bg-[#2ECC71]">Billing System</a>
-      </nav>
+    </nav>
     </div>
+
     <!-- Main Content -->
     <div class="flex-1 p-6 ml-0 md:ml-64 main-content">
       <!-- Checkout Section -->
@@ -128,12 +111,31 @@
         <h2 class="text-2xl font-bold text-primary mb-4">Checkout</h2>
         <div class="card p-6 rounded-lg print-bill">
           <div id="bill-loading" class="text-muted mb-4 hidden">Loading bill...</div>
-          <div id="bill-header" class="mb-4 print-bill">
-            <h3 class="text-lg font-semibold text-primary">Bill Details</h3>
+
+          <div id="bill-header" class="mb-4 print-bill-header">
+            <img src="/PahanaEduWeb/images/pahanaEduLogo.png" alt="Pahana Edu Logo" width="100" class="mx-auto">
+            <h3 class="text-lg font-semibold text-primary">Pahana Edu Bookshop</h3>
+            <p class="text-muted">123 Book Street, Colombo, Sri Lanka</p>
+            <p class="text-muted">Phone: +94 11 123 4567</p>
             <p id="bill-customer" class="text-muted"></p>
             <p id="bill-date" class="text-muted"></p>
           </div>
-          <table class="w-full mb-4 print-bill">
+
+          <!-- Customer ID (manual) -->
+          <div class="mb-4 no-print">
+            <label for="customer-id-input" class="block text-sm font-medium text-primary mb-1">
+              Customer ID (optional)
+            </label>
+            <div class="flex gap-2">
+              <input id="customer-id-input" type="number" min="1" placeholder="Enter Customer ID"
+                     class="w-48 p-2 border rounded-lg focus:ring-2 focus:ring-[#2C3E94]">
+              <button id="verify-customer-btn" class="btn-primary text-white px-3 py-2 rounded">Verify</button>
+              <button id="clear-customer-btn" class="btn-danger text-white px-3 py-2 rounded">Clear</button>
+            </div>
+            <p id="customer-status" class="text-sm mt-2 text-muted"></p>
+          </div>
+
+          <table class="w-full mb-4">
             <thead class="bg-gray-200">
               <tr>
                 <th class="p-2 text-left">Image</th>
@@ -145,11 +147,13 @@
             </thead>
             <tbody id="bill-table-body"></tbody>
           </table>
-          <div class="flex justify-between items-center mb-4 print-bill">
+
+          <div class="flex justify-between items-center mb-4 print-bill-footer">
             <div class="text-primary font-semibold">
               Total: Rs. <span id="bill-total">0.00</span>
             </div>
           </div>
+
           <div class="flex justify-end space-x-4 no-print">
             <button id="print-bill-btn" class="btn-primary text-white px-4 py-2 rounded">Print Bill</button>
             <button id="checkout-btn" class="btn-primary text-white px-4 py-2 rounded">Complete Checkout</button>
@@ -158,6 +162,7 @@
       </section>
     </div>
   </div>
+
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const API_BASE = "http://localhost:8080/PahanaEduService/api";
@@ -167,171 +172,221 @@
       const billTotal = document.getElementById('bill-total');
       const billCustomer = document.getElementById('bill-customer');
       const billDate = document.getElementById('bill-date');
+      const customerIdInput = document.getElementById('customer-id-input');
+      const verifyBtn = document.getElementById('verify-customer-btn');
+      const clearCustomerBtn = document.getElementById('clear-customer-btn');
+      const customerStatus = document.getElementById('customer-status');
 
       // Role-based access control
-      const user = JSON.parse(sessionStorage.getItem('user'));
+      const user = JSON.parse(sessionStorage.getItem('user') || 'null');
       console.log('sessionStorage user:', user);
       if (!user || !user.role || !user.username) {
         console.log('No user, role, or username in sessionStorage, redirecting to login');
         showNotification('Please log in to proceed with checkout', false);
-        setTimeout(() => window.location.href = '/PahanaEduWeb/login.html', 2000);
+        setTimeout(() => window.location.href = '/PahanaEduWeb/login.html', 1500);
         return;
       }
-
-      const role = user.role.toLowerCase();
+      const role = String(user.role).toLowerCase();
       if (role !== 'admin' && role !== 'cashier') {
         console.log(`User role ${role} is not authorized, redirecting to login.html`);
         showNotification('Access denied: Unknown role', false);
-        setTimeout(() => window.location.href = '/PahanaEduWeb/login.html', 2000);
+        setTimeout(() => window.location.href = '/PahanaEduWeb/login.html', 1500);
         return;
       }
-
       document.getElementById('user-greeting').textContent = `Welcome, ${user.username}`;
-      document.getElementById('user-management-link').classList.toggle('hidden', role !== 'admin');
+      const userManagementLink = document.getElementById('user-management-link');
+      if (userManagementLink) userManagementLink.classList.toggle('hidden', role !== 'admin');
 
       // Notification helper
       function showNotification(message, isSuccess) {
         console.log(`Notification: ${message}, Success: ${isSuccess}`);
         notification.textContent = message;
-        notification.classList.remove('error', 'success');
+        notification.classList.remove('error', 'success', 'hidden');
         notification.classList.add(isSuccess ? 'success' : 'error');
-        notification.classList.remove('hidden');
-        setTimeout(() => notification.classList.add('hidden'), 3000);
+        setTimeout(() => notification.classList.add('hidden'), 2800);
       }
 
-      // Verify customer if customerId exists
-      async function verifyCustomer(customerId) {
-        if (!customerId) {
-          console.log('No customerId provided, skipping verification');
-          return { username: user.username }; // Use session username for bill
+      // Format LocalDateTime for server
+      function formatLocalDateTime(d = new Date()) {
+        const pad = (n) => String(n).padStart(2, '0');
+        const yyyy = d.getFullYear();
+        const mm = pad(d.getMonth() + 1);
+        const dd = pad(d.getDate());
+        const HH = pad(d.getHours());
+        const II = pad(d.getMinutes());
+        const SS = pad(d.getSeconds());
+        return `${yyyy}-${mm}-${dd}T${HH}:${II}:${SS}`;
+      }
+
+      // Customer verification
+      let selectedCustomer = null; // {id, username} or null
+
+      function setCustomerStatus(text, ok) {
+        customerStatus.textContent = text;
+        customerStatus.classList.remove('error', 'success');
+        customerStatus.classList.add(ok ? 'success' : 'error');
+      }
+
+      async function verifyCustomerById(id) {
+        const cid = Number(id);
+        if (!Number.isFinite(cid) || cid <= 0) {
+          setCustomerStatus('Enter a valid positive Customer ID.', false);
+          selectedCustomer = null;
+          updateBillHeader();
+          return null;
         }
-        console.log('Verifying customerId:', customerId);
+        console.log('Verifying customerId:', cid);
         try {
-          const response = await fetch(`${API_BASE}/customers/${customerId}`, {
+          const res = await fetch(`${API_BASE}/customers/${cid}`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' }
           });
-          if (response.ok) {
-            const customer = await response.json();
-            console.log('Customer verified:', customer);
-            return customer;
-          } else {
-            console.warn('Customer not found:', response.status);
-            return { username: user.username }; // Proceed with session username
+          if (!res.ok) {
+            setCustomerStatus(`Customer ID ${cid} not found. Please register customer or proceed as Walk-in.`, false);
+            selectedCustomer = null;
+            updateBillHeader();
+            return null;
           }
-        } catch (error) {
-          console.error('Error verifying customer:', error);
-          return { username: user.username }; // Proceed with session username
+          const c = await res.json();
+          selectedCustomer = { id: c.id, username: c.username || c.fullName || `ID ${c.id}` };
+          setCustomerStatus(`Selected: ${selectedCustomer.username} (ID: ${selectedCustomer.id})`, true);
+          updateBillHeader();
+          return selectedCustomer;
+        } catch (err) {
+          console.error('Error verifying customer:', err);
+          setCustomerStatus(`Error verifying customer: ${err.message}`, false);
+          selectedCustomer = null;
+          updateBillHeader();
+          return null;
         }
       }
 
-      // Get cart
+      function clearSelectedCustomer() {
+        selectedCustomer = null;
+        customerIdInput.value = '';
+        setCustomerStatus('No customer selected (Walk-in).', true);
+        updateBillHeader();
+      }
+
+      verifyBtn.addEventListener('click', () => verifyCustomerById(customerIdInput.value));
+      clearCustomerBtn.addEventListener('click', clearSelectedCustomer);
+
+      // Cart helpers
       async function getCart() {
         const cartId = sessionStorage.getItem('cartId');
-        console.log('Checking for cartId:', cartId);
         if (!cartId) {
           console.log('No cartId in sessionStorage');
           showNotification('No cart found. Please add items to your cart.', false);
-          setTimeout(() => window.location.href = '/PahanaEduWeb/viewProducts.html', 2000);
+          setTimeout(() => window.location.href = '/PahanaEduWeb/viewProducts.html', 1200);
           return null;
         }
+        console.log('Fetching cart:', cartId);
         try {
-          const response = await fetch(`${API_BASE}/carts/${cartId}`, {
+          const res = await fetch(`${API_BASE}/carts/${cartId}`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' }
           });
-          if (response.ok) {
-            const cart = await response.json();
-            console.log('Cart retrieved:', cart);
-            return { id: cart.id };
-          } else {
-            console.log('Cart not found, clearing sessionStorage cartId');
+          if (!res.ok) {
+            console.warn('Cart not found:', res.status);
             sessionStorage.removeItem('cartId');
             showNotification('Cart not found. Please add items to your cart.', false);
-            setTimeout(() => window.location.href = '/PahanaEduWeb/viewProducts.html', 2000);
+            setTimeout(() => window.location.href = '/PahanaEduWeb/viewProducts.html', 1200);
             return null;
           }
-        } catch (error) {
-          console.error('Error fetching cart:', error);
-          showNotification(`Error loading cart: ${error.message}`, false);
+          const cart = await res.json();
+          console.log('Cart retrieved:', cart);
+          return { id: cart.id };
+        } catch (e) {
+          console.error('Error loading cart:', e);
+          showNotification(`Error loading cart: ${e.message}`, false);
           return null;
         }
       }
 
-      // Fetch item details
       async function fetchItemDetails(itemId) {
         console.log('Fetching item details for itemId:', itemId);
         try {
-          const response = await fetch(`${API_BASE}/items/${itemId}`, {
+          const res = await fetch(`${API_BASE}/items/${itemId}`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' }
           });
-          if (!response.ok) throw new Error(`Failed to fetch item ${itemId}: ${response.status} ${response.statusText}`);
-          const item = await response.json();
+          if (!res.ok) throw new Error(`Failed to fetch item ${itemId} (${res.status})`);
+          const item = await res.json();
           console.log('Item details:', item);
           return item;
-        } catch (error) {
-          console.error('Error fetching item:', error);
-          showNotification(`Error fetching item ${itemId}: ${error.message}`, false);
+        } catch (e) {
+          console.error('Error fetching item:', e);
+          showNotification(`Error fetching item ${itemId}: ${e.message}`, false);
           return null;
         }
       }
 
-      // Fetch and display bill
+      function updateBillHeader() {
+        billCustomer.textContent = 'Customer: ' + (selectedCustomer ? selectedCustomer.username : 'Walk-in');
+        billDate.textContent = 'Date: ' + new Date().toLocaleString();
+      }
+
+      // Load bill
       async function loadBill() {
         billLoading.classList.remove('hidden');
+        billTableBody.innerHTML = '<tr><td colspan="5" class="p-2 text-muted">Loading...</td></tr>';
         try {
-          const customer = await verifyCustomer(user.customerId);
+          setCustomerStatus('No customer selected (Walk-in).', true);
+          updateBillHeader();
+
           const cart = await getCart();
           if (!cart) {
-            billLoading.classList.add('hidden');
+            billTableBody.innerHTML = '<tr><td colspan="5" class="p-2 text-muted">Cart is empty</td></tr>';
+            billTotal.textContent = '0.00';
             return;
           }
 
-          const response = await fetch(`${API_BASE}/cart-items/cart/${cart.id}`, {
+          const r = await fetch(`${API_BASE}/cart-items/cart/${cart.id}`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' }
           });
-          if (!response.ok) throw new Error(`Failed to fetch cart items: ${response.status} ${response.statusText}`);
-          const cartItems = await response.json();
+          if (!r.ok) {
+            const errorText = await r.text();
+            throw new Error(`Failed to fetch cart items: ${r.status} ${errorText}`);
+          }
+          const cartItems = await r.json();
           console.log('Cart items retrieved:', cartItems);
-          billTableBody.innerHTML = '';
-          let total = 0;
 
           if (!cartItems || cartItems.length === 0) {
             billTableBody.innerHTML = '<tr><td colspan="5" class="p-2 text-muted">Cart is empty</td></tr>';
             billTotal.textContent = '0.00';
-            billLoading.classList.add('hidden');
             showNotification('Cart is empty. Please add items to proceed.', false);
-            setTimeout(() => window.location.href = '/PahanaEduWeb/viewProducts.html', 2000);
             return;
           }
 
-          for (const item of cartItems) {
-            const itemDetails = await fetchItemDetails(item.itemId);
-            if (!itemDetails) continue;
-            const itemTotal = item.quantity * itemDetails.price;
+          billTableBody.innerHTML = '';
+          let total = 0;
+          for (const ci of cartItems) {
+            const item = await fetchItemDetails(ci.itemId);
+            if (!item) continue;
+            const itemTotal = Number(ci.quantity) * Number(item.price);
             total += itemTotal;
+            const imgSrc = item.imageUrl?.startsWith('http')
+              ? item.imageUrl
+              : `http://localhost:8080/PahanaEduService/${item.imageUrl ?? 'images/placeholder.png'}`;
             billTableBody.innerHTML += `
               <tr>
-                <td class="p-2"><img src="http://localhost:8080/PahanaEduService/${itemDetails.imageUrl}" alt="${itemDetails.title}" class="h-16 w-16 object-cover rounded"/></td>
-                <td class="p-2">${itemDetails.title}</td>
-                <td class="p-2">Rs. ${itemDetails.price.toFixed(2)}</td>
-                <td class="p-2">${item.quantity}</td>
+                <td class="p-2"><img src="${imgSrc}" alt="${item.title}" class="h-16 w-16 object-cover rounded"
+                     onerror="this.onerror=null;this.src='/PahanaEduWeb/images/placeholder.png';"></td>
+                <td class="p-2">${item.title}</td>
+                <td class="p-2">Rs. ${Number(item.price).toFixed(2)}</td>
+                <td class="p-2">${ci.quantity}</td>
                 <td class="p-2">Rs. ${itemTotal.toFixed(2)}</td>
-              </tr>
-            `;
+              </tr>`;
           }
-
-          billCustomer.textContent = `Customer: ${customer.username}`;
-          billDate.textContent = `Date: ${new Date().toLocaleString()}`;
           billTotal.textContent = total.toFixed(2);
-          billLoading.classList.add('hidden');
-        } catch (error) {
-          console.error('Error loading bill:', error);
-          billLoading.classList.add('hidden');
+        } catch (e) {
+          console.error('Error loading bill:', e);
           billTableBody.innerHTML = '<tr><td colspan="5" class="p-2 text-muted">Error loading bill</td></tr>';
-          showNotification(`Error loading bill: ${error.message}`, false);
+          billTotal.textContent = '0.00';
+          showNotification(`Error loading bill: ${e.message}`, false);
+        } finally {
+          billLoading.classList.add('hidden');
         }
       }
 
@@ -341,96 +396,107 @@
           const cart = await getCart();
           if (!cart) return;
 
-          const cartItemsResponse = await fetch(`${API_BASE}/cart-items/cart/${cart.id}`, {
+          const cartItemsRes = await fetch(`${API_BASE}/cart-items/cart/${cart.id}`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' }
           });
-          if (!cartItemsResponse.ok) throw new Error(`Failed to fetch cart items: ${cartItemsResponse.status} ${cartItemsResponse.statusText}`);
-          const cartItems = await cartItemsResponse.json();
+          if (!cartItemsRes.ok) {
+            const errorText = await cartItemsRes.text();
+            throw new Error(`Failed to fetch cart items: ${cartItemsRes.status} ${errorText}`);
+          }
+          const cartItems = await cartItemsRes.json();
           if (!cartItems || cartItems.length === 0) {
             showNotification('Cart is empty. Please add items to proceed.', false);
             return;
           }
 
+          // Compute total and cache details
           let totalAmount = 0;
-          for (const item of cartItems) {
-            const itemDetails = await fetchItemDetails(item.itemId);
-            if (!itemDetails) throw new Error(`Failed to fetch item ${item.itemId}`);
-            totalAmount += item.quantity * itemDetails.price;
+          const detailed = [];
+          for (const ci of cartItems) {
+            const item = await fetchItemDetails(ci.itemId);
+            if (!item) continue;
+            const line = Number(ci.quantity) * Number(item.price);
+            totalAmount += line;
+            detailed.push({ item, ci, line });
           }
 
-          // Create order
+          // Build order payload
           const orderPayload = {
-            orderDate: new Date().toISOString(),
-            totalAmount: totalAmount
+            orderDate: formatLocalDateTime(),
+            status: 'pending',
+            totalAmount: totalAmount,
+            customerId: selectedCustomer ? selectedCustomer.id : null
           };
-          if (user.customerId) {
-            orderPayload.customerId = user.customerId;
-          }
           console.log('Creating order with payload:', orderPayload);
-          const orderResponse = await fetch(`${API_BASE}/orders`, {
+
+          // Create order
+          const orderRes = await fetch(`${API_BASE}/orders`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(orderPayload)
           });
-          if (!orderResponse.ok) {
-            const errorData = await orderResponse.json();
-            throw new Error(`Failed to create order: ${errorData.error || orderResponse.status}`);
+          if (!orderRes.ok) {
+            const errorText = await orderRes.text();
+            throw new Error(`Failed to create order: ${orderRes.status} ${errorText}`);
           }
-          const order = await orderResponse.json();
+          const order = await orderRes.json();
+          if (!order.id || order.id === 0) {
+            throw new Error('Order created but ID not returned. Ensure backend sets generated ID.');
+          }
           console.log('Order created:', order);
 
-          // Create order items
-          for (const item of cartItems) {
-            const itemDetails = await fetchItemDetails(item.itemId);
-            if (!itemDetails) continue;
-            const orderItemResponse = await fetch(`${API_BASE}/orderitems`, {
+          // Insert order_items
+          for (const row of detailed) {
+            const itemRes = await fetch(`${API_BASE}/orderitems`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 orderId: order.id,
-                itemId: item.itemId,
-                quantity: item.quantity,
-                unitPrice: itemDetails.price
+                itemId: row.ci.itemId,
+                quantity: row.ci.quantity,
+                unitPrice: row.item.price
               })
             });
-            if (!orderItemResponse.ok) {
-              const errorData = await orderItemResponse.json();
-              throw new Error(`Failed to create order item: ${errorData.error || orderItemResponse.status}`);
+            if (!itemRes.ok) {
+              const eText = await itemRes.text();
+              throw new Error(`Failed to add order item: ${itemRes.status} ${eText}`);
             }
-            console.log('Order item created:', await orderItemResponse.json());
           }
 
           // Clear cart
-          const clearCartResponse = await fetch(`${API_BASE}/cart-items/cart/${cart.id}`, {
+          const clearRes = await fetch(`${API_BASE}/cart-items/cart/${cart.id}`, {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' }
           });
-          if (!clearCartResponse.ok && clearCartResponse.status !== 204) {
-            console.warn('Failed to clear cart items:', clearCartResponse.status);
+          if (!clearRes.ok && clearRes.status !== 204) {
+            console.warn('Bulk delete failed, attempting individual deletes');
+            for (const ci of cartItems) {
+              await fetch(`${API_BASE}/cart-items/${ci.id}`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' }
+              }).catch(() => {});
+            }
           }
-          sessionStorage.removeItem('cartId');
-          console.log('Cart cleared');
 
-          showNotification('Order placed successfully!', true);
-          setTimeout(() => window.location.href = '/PahanaEduWeb/cashierDashboard.html', 2000);
+          // Reset and redirect
+          sessionStorage.removeItem('cartId');
+          showNotification(`Order #${order.id} placed successfully!`, true);
+          setTimeout(() => window.location.href = '/PahanaEduWeb/cashierDashboard.html', 1200);
         } catch (error) {
           console.error('Error completing checkout:', error);
           showNotification(`Error completing checkout: ${error.message}`, false);
         }
       }
 
-      // Print bill
+      // Print
       document.getElementById('print-bill-btn').addEventListener('click', () => {
         console.log('Printing bill');
         window.print();
       });
 
-      // Complete checkout
-      document.getElementById('checkout-btn').addEventListener('click', () => {
-        console.log('Initiating checkout');
-        completeCheckout();
-      });
+      // Checkout
+      document.getElementById('checkout-btn').addEventListener('click', completeCheckout);
 
       // Logout
       document.getElementById('logout-btn').addEventListener('click', () => {
@@ -440,7 +506,9 @@
         window.location.href = '/PahanaEduWeb/login.html';
       });
 
-      // Initial load
+      // Init
+      setCustomerStatus('No customer selected (Walk-in).', true);
+      updateBillHeader();
       loadBill();
     });
   </script>

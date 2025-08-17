@@ -1,317 +1,386 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>Pahana Edu – Item Management</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    body { font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background:#F5F6FA; }
-    .header { background:#fff; border-bottom:1px solid rgba(44,62,148,.1); }
-    .sidebar { background:linear-gradient(to bottom,#2C3E94,#1A2A6C); }
-    .sidebar a:hover { background:#2ECC71; transform: translateX(5px); }
-    .card { background:#fff; border:1px solid rgba(44,62,148,.1); box-shadow:0 4px 6px rgba(0,0,0,.05); }
-    .btn-primary { background:linear-gradient(to right,#2ECC71,#27AE60); color:#fff; }
-    .btn-primary:hover { filter:brightness(1.05); }
-    .btn-danger { background:#E74C3C; color:#fff; }
-    .btn-danger:hover { background:#C0392B; }
-    .btn-warning { background:#F1C40F; color:#fff; }
-    .btn-warning:hover { background:#D4AC0D; }
-    .text-primary { color:#2D3436; }
-    .text-muted { color:#7F8C8D; }
-    .error { color:#E74C3C; background:rgba(231,76,60,.08); border:1px solid #E74C3C; }
-    .success { color:#27AE60; background:rgba(39,174,96,.08); border:1px solid #27AE60; }
-    input:focus, textarea:focus { outline:none; border:2px solid #2C3E94; }
-  </style>
-</head>
-<body class="flex flex-col min-h-screen">
-  <!-- Header -->
-  <header class="header flex items-center justify-between p-4">
-    <div class="flex items-center gap-3">
-      <a href="/PahanaEduWeb/cashierDashboard.html">
-        <img src="/PahanaEduWeb/images/pahanaEduLogo.png" alt="Pahana Edu Logo" width="120" />
-      </a>
-      <h1 class="text-xl font-bold text-primary">Bookshop Management System</h1>
-    </div>
-    <div class="flex items-center gap-3">
-      <span id="user-greeting" class="text-primary"></span>
-      <button id="logout-btn" class="btn-primary px-4 py-2 rounded">Logout</button>
-    </div>
-  </header>
+    <head>
+        <meta charset="UTF-8"/>
+        <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+        <title>Pahana Edu – Item Management</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <style>
+            body {
+                font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                background:#F5F6FA;
+            }
+            .header {
+                background:#fff;
+                border-bottom:1px solid rgba(44,62,148,.1);
+            }
+            .sidebar {
+                background:linear-gradient(to bottom,#2C3E94,#1A2A6C);
+            }
+            .sidebar a:hover {
+                background:#2ECC71;
+                transform: translateX(5px);
+            }
+            .card {
+                background:#fff;
+                border:1px solid rgba(44,62,148,.1);
+                box-shadow:0 4px 6px rgba(0,0,0,.05);
+            }
+            .btn-primary {
+                background:linear-gradient(to right,#2ECC71,#27AE60);
+                color:#fff;
+            }
+            .btn-primary:hover {
+                filter:brightness(1.05);
+            }
+            .btn-danger {
+                background:#E74C3C;
+                color:#fff;
+            }
+            .btn-danger:hover {
+                background:#C0392B;
+            }
+            .btn-warning {
+                background:#F1C40F;
+                color:#fff;
+            }
+            .btn-warning:hover {
+                background:#D4AC0D;
+            }
+            .text-primary {
+                color:#2D3436;
+            }
+            .text-muted {
+                color:#7F8C8D;
+            }
+            .error {
+                color:#E74C3C;
+                background:rgba(231,76,60,.08);
+                border:1px solid #E74C3C;
+            }
+            .success {
+                color:#27AE60;
+                background:rgba(39,174,96,.08);
+                border:1px solid #27AE60;
+            }
+            input:focus, textarea:focus {
+                outline:none;
+                border:2px solid #2C3E94;
+            }
+        </style>
+    </head>
+    <body class="flex flex-col min-h-screen">
+        <!-- Header -->
+        <header class="header flex items-center justify-between p-4">
+            <div class="flex items-center gap-3">
+                <a href="/PahanaEduWeb/cashierDashboard.html">
+                    <img src="/PahanaEduWeb/images/pahanaEduLogo.png" alt="Pahana Edu Logo" width="120" />
+                </a>
+                <h1 class="text-xl font-bold text-primary">Bookshop Management System</h1>
+            </div>
+            <div class="flex items-center gap-3">
+                <span id="user-greeting" class="text-primary"></span>
+                <button id="logout-btn" class="btn-primary px-4 py-2 rounded">Logout</button>
+            </div>
+        </header>
 
-  <!-- Notifications -->
-  <div id="notification" class="hidden mx-4 my-3 p-3 rounded text-sm"></div>
+        <!-- Notifications -->
+        <div id="notification" class="hidden mx-4 my-3 p-3 rounded text-sm"></div>
 
-  <div class="flex flex-1">
-    <!-- Sidebar -->
-    <aside class="sidebar w-64 text-white p-4 fixed h-full">
-      <nav class="space-y-2">
-        <a href="/PahanaEduWeb/cashierDashboard.html" class="block py-2 px-4 rounded">Dashboard</a>
-        <a href="/PahanaEduWeb/viewProducts.html" class="block py-2 px-4 rounded">Book Catalog</a>
-        <!-- Visible Admin-only -->
-        <a id="items-link" href="/PahanaEduWeb/itemManagement.html" class="block py-2 px-4 rounded">Item Management</a>
-      </nav>
-    </aside>
+        <div class="flex flex-1">
+            <!-- Sidebar -->
+            <aside class="sidebar w-64 text-white p-4 fixed h-full">
+                <nav class="space-y-2">
+                    <a href="/PahanaEduWeb/cashierDashboard.html" class="block py-2 px-4 rounded">Dashboard</a>
+                    <a href="/PahanaEduWeb/viewProducts.html" class="block py-2 px-4 rounded">Book Catalog</a>
+                    <!-- Visible Admin-only -->
+                    <a id="items-link" href="/PahanaEduWeb/itemManagement.html" class="block py-2 px-4 rounded">Item Management</a>
+                </nav>
+            </aside>
 
-    <!-- Main -->
-    <main class="flex-1 p-6 ml-0 md:ml-64">
-      <section class="mb-6">
-        <h2 class="text-2xl font-bold text-primary">Item Management</h2>
-        <p class="text-muted">Add, update, and remove items in the catalog (Admin only).</p>
-      </section>
+            <!-- Main -->
+            <main class="flex-1 p-6 ml-0 md:ml-64">
+                <section class="mb-6">
+                    <h2 class="text-2xl font-bold text-primary">Item Management</h2>
+                    <p class="text-muted">Add, update, and remove items in the catalog (Admin only).</p>
+                </section>
 
-      <!-- Add / Edit Form -->
-      <section id="form-section" class="card p-6 rounded mb-6">
-        <form id="itemForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input type="hidden" id="itemId">
-          <div class="flex flex-col gap-1">
-            <label class="text-sm text-muted">Title</label>
-            <input id="title" type="text" class="border p-2 rounded" required>
-          </div>
-          <div class="flex flex-col gap-1">
-            <label class="text-sm text-muted">Author</label>
-            <input id="author" type="text" class="border p-2 rounded" required>
-          </div>
-          <div class="md:col-span-2 flex flex-col gap-1">
-            <label class="text-sm text-muted">Description</label>
-            <textarea id="description" rows="3" class="border p-2 rounded" required></textarea>
-          </div>
-          <div class="flex flex-col gap-1">
-            <label class="text-sm text-muted">Price (LKR)</label>
-            <input id="price" type="number" step="0.01" min="0" class="border p-2 rounded" required>
-          </div>
-          <div class="flex flex-col gap-1">
-            <label class="text-sm text-muted">Stock Qty</label>
-            <input id="stockQty" type="number" min="0" class="border p-2 rounded" required>
-          </div>
-          <div class="md:col-span-2 flex flex-col gap-1">
-            <label class="text-sm text-muted">Image</label>
-            <input id="imageUpload" type="file" accept="image/*" class="border p-2 rounded">
-            <small class="text-muted">If left empty on edit, the previous image is kept.</small>
-          </div>
-          <div class="md:col-span-2">
-            <button type="submit" class="btn-primary px-4 py-2 rounded">Save Item</button>
-            <button type="button" id="reset-btn" class="btn-warning px-4 py-2 rounded ml-2">Reset</button>
-          </div>
-        </form>
-      </section>
+                <!-- Add / Edit Form -->
+                <section id="form-section" class="card p-6 rounded mb-6">
+                    <form id="itemForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input type="hidden" id="itemId">
+                        <input type="hidden" id="existingImageUrl"> <!-- add this -->
 
-      <!-- Items Table -->
-      <section class="card p-4 rounded">
-        <div class="flex items-center justify-between mb-3">
-          <h3 class="text-lg font-semibold text-primary">Catalog Items</h3>
-          <input id="search" type="text" placeholder="Search by title/author" class="border p-2 rounded w-60">
+                        <input type="hidden" id="itemId">
+                        <div class="flex flex-col gap-1">
+                            <label class="text-sm text-muted">Title</label>
+                            <input id="title" type="text" class="border p-2 rounded" required>
+                        </div>
+                        <div class="flex flex-col gap-1">
+                            <label class="text-sm text-muted">Author</label>
+                            <input id="author" type="text" class="border p-2 rounded" required>
+                        </div>
+                        <div class="md:col-span-2 flex flex-col gap-1">
+                            <label class="text-sm text-muted">Description</label>
+                            <textarea id="description" rows="3" class="border p-2 rounded" required></textarea>
+                        </div>
+                        <div class="flex flex-col gap-1">
+                            <label class="text-sm text-muted">Price (LKR)</label>
+                            <input id="price" type="number" step="0.01" min="0" class="border p-2 rounded" required>
+                        </div>
+                        <div class="flex flex-col gap-1">
+                            <label class="text-sm text-muted">Stock Qty</label>
+                            <input id="stockQty" type="number" min="0" class="border p-2 rounded" required>
+                        </div>
+                        <div class="md:col-span-2 flex flex-col gap-1">
+                            <label class="text-sm text-muted">Image</label>
+                            <input id="imageUpload" type="file" accept="image/*" class="border p-2 rounded">
+                            <small class="text-muted">If left empty on edit, the previous image is kept.</small>
+                        </div>
+                        <div class="md:col-span-2">
+                            <button type="submit" class="btn-primary px-4 py-2 rounded">Save Item</button>
+                            <button type="button" id="reset-btn" class="btn-warning px-4 py-2 rounded ml-2">Reset</button>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- Items Table -->
+                <section class="card p-4 rounded">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-lg font-semibold text-primary">Catalog Items</h3>
+                        <input id="search" type="text" placeholder="Search by title/author" class="border p-2 rounded w-60">
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <th class="p-2 text-left">Image</th>
+                                    <th class="p-2 text-left">Title</th>
+                                    <th class="p-2 text-left">Author</th>
+                                    <th class="p-2 text-left">Price</th>
+                                    <th class="p-2 text-left">Stock</th>
+                                    <th class="p-2 text-left">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="itemTable"></tbody>
+                        </table>
+                    </div>
+                </section>
+            </main>
         </div>
-        <div class="overflow-x-auto">
-          <table class="min-w-full">
-            <thead class="bg-gray-100">
-              <tr>
-                <th class="p-2 text-left">Image</th>
-                <th class="p-2 text-left">Title</th>
-                <th class="p-2 text-left">Author</th>
-                <th class="p-2 text-left">Price</th>
-                <th class="p-2 text-left">Stock</th>
-                <th class="p-2 text-left">Actions</th>
-              </tr>
-            </thead>
-            <tbody id="itemTable"></tbody>
-          </table>
-        </div>
-      </section>
-    </main>
-  </div>
 
-  <script>
-    // ===== Config =====
-    const API_ROOT = "http://localhost:8080/PahanaEduService/api";
-    const ITEMS_API = `${API_ROOT}/items`;
+        <script>
+  // ===== Config =====
+  const API_ROOT = "http://localhost:8080/PahanaEduService/api";
+  const ITEMS_API = `${API_ROOT}/items`;
 
-    // ===== Utilities =====
-    const $ = (id) => document.getElementById(id);
-    const notify = (msg, ok=true) => {
-      const n = $("notification");
-      n.textContent = msg;
-      n.classList.remove("hidden","error","success");
-      n.classList.add(ok ? "success" : "error");
-      setTimeout(()=> n.classList.add("hidden"), 3000);
-    };
+  // ===== Utilities =====
+  const $ = (id) => document.getElementById(id);
+  const notify = (msg, ok = true) => {
+    const n = $("notification");
+    n.textContent = msg;
+    n.classList.remove("hidden", "error", "success");
+    n.classList.add(ok ? "success" : "error");
+    setTimeout(() => n.classList.add("hidden"), 3000);
+  };
 
-    const normalizeRole = (role) => String(role||"").trim().toLowerCase();
+  const normalizeRole = (role) => String(role || "").trim().toLowerCase();
 
-    // ===== Auth / RBAC =====
-    const user = JSON.parse(sessionStorage.getItem("user") || "null");
-    if (!user || !user.username || !user.role) {
-      notify("Please log in to access Item Management", false);
-      setTimeout(()=> window.location.href="/PahanaEduWeb/login.html", 1200);
-    } else {
-      $("user-greeting").textContent = `Welcome, ${user.username}`;
-      const role = normalizeRole(user.role);
-      // Item Management is Admin-only: if not admin, redirect to catalog
-      if (role !== "admin") {
-        notify("Access denied: Admins only", false);
-        setTimeout(()=> window.location.href="/PahanaEduWeb/viewProducts.html", 1200);
+  // ===== Auth / RBAC =====
+  const user = JSON.parse(sessionStorage.getItem("user") || "null");
+  if (!user || !user.username || !user.role) {
+    notify("Please log in to access Item Management", false);
+    setTimeout(() => (window.location.href = "/PahanaEduWeb/login.html"), 1200);
+  } else {
+    $("user-greeting").textContent = `Welcome, ${user.username}`;
+    const role = normalizeRole(user.role);
+    // Item Management is Admin-only: if not admin, redirect to catalog
+    if (role !== "admin") {
+      notify("Access denied: Admins only", false);
+      setTimeout(() => (window.location.href = "/PahanaEduWeb/viewProducts.html"), 1200);
+    }
+  }
+
+  $("logout-btn").addEventListener("click", () => {
+    sessionStorage.removeItem("user");
+    sessionStorage.removeItem("cartId");
+    window.location.href = "/PahanaEduWeb/login.html";
+  });
+
+  // ===== Edit state (IMPORTANT) =====
+  // Add this hidden input in your HTML form:
+  // <input type="hidden" id="existingImageUrl" />
+  let editing = false;
+
+  // ===== Image Upload then Save Item =====
+  $("itemForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    // Basic client validation
+    const title = $("title").value.trim();
+    const author = $("author").value.trim();
+    const description = $("description").value.trim();
+    const price = parseFloat($("price").value);
+    const stockQty = parseInt($("stockQty").value, 10);
+
+    if (!title || !author || !description || isNaN(price) || price < 0 || isNaN(stockQty) || stockQty < 0) {
+      notify("Please fill all fields correctly (price ≥ 0, stock ≥ 0).", false);
+      return;
+    }
+
+    const id = $("itemId").value.trim();
+    const file = $("imageUpload").files[0];
+    const existingImageUrl = $("existingImageUrl").value.trim(); // keep current image when no new file
+
+    try {
+      // 1) Upload a new image only if user picked one
+      let imageUrl = existingImageUrl || null;
+      if (file) {
+        const fd = new FormData();
+        fd.append("file", file);
+        const up = await fetch(`${ITEMS_API}/upload`, { method: "POST", body: fd });
+        if (!up.ok) throw new Error(`Image upload failed: ${up.status}`);
+        const upJson = await up.json();
+        imageUrl = upJson.imageUrl;
+      }
+
+      // 2) Build payload; always send imageUrl (existing or newly uploaded)
+      const payload = { title, author, description, price, stockQty, imageUrl };
+
+      // 3) Explicitly choose PUT for edit mode; POST for create
+      const isUpdate = editing && id !== "";
+      const method = isUpdate ? "PUT" : "POST";
+      const url = isUpdate ? `${ITEMS_API}/${id}` : ITEMS_API;
+
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error(`Save failed: ${res.status}`);
+
+      // 4) Reset form + state
+      $("itemForm").reset();
+      $("itemId").value = "";
+      $("existingImageUrl").value = "";
+      editing = false;
+
+      notify(isUpdate ? "Item updated!" : "Item created!", true);
+      await loadItems();
+    } catch (err) {
+      console.error(err);
+      notify(err.message || "Failed to save item.", false);
+    }
+  });
+
+  $("reset-btn").addEventListener("click", () => {
+    $("itemForm").reset();
+    $("itemId").value = "";
+    $("existingImageUrl").value = "";
+    editing = false;
+  });
+
+  // ===== Load Items =====
+  async function loadItems() {
+    try {
+      const res = await fetch(ITEMS_API);
+      if (!res.ok) throw new Error(`Fetch items failed: ${res.status}`);
+      const items = await res.json();
+      renderTable(items);
+    } catch (err) {
+      console.error(err);
+      notify(err.message || "Error loading items.", false);
+    }
+  }
+
+  function renderTable(items) {
+    const tb = $("itemTable");
+    tb.innerHTML = "";
+    if (!items || !items.length) {
+      tb.innerHTML = `<tr><td colspan="6" class="p-3 text-muted">No items found</td></tr>`;
+      return;
+    }
+    for (const item of items) {
+      const price = Number(item.price || 0).toFixed(2);
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td class="p-2">
+          <img src="http://localhost:8080/PahanaEduService/${item.imageUrl || ''}"
+               alt="${item.title || ''}" class="h-16 w-16 object-cover rounded"/>
+        </td>
+        <td class="p-2">${item.title || ""}</td>
+        <td class="p-2">${item.author || ""}</td>
+        <td class="p-2">Rs. ${price}</td>
+        <td class="p-2">${item.stockQty ?? 0}</td>
+        <td class="p-2">
+          <button class="btn-warning px-3 py-1 rounded" data-action="edit" data-id="${item.id}">Edit</button>
+          <button class="btn-danger px-3 py-1 rounded ml-2" data-action="delete" data-id="${item.id}">Delete</button>
+        </td>
+      `;
+      tb.appendChild(row);
+    }
+  }
+
+  // Delegated actions
+  document.addEventListener("click", async (e) => {
+    const btn = e.target.closest("button[data-action]");
+    if (!btn) return;
+    const id = btn.getAttribute("data-id");
+    const action = btn.getAttribute("data-action");
+
+    if (action === "edit") {
+      try {
+        const res = await fetch(`${ITEMS_API}/${id}`);
+        if (!res.ok) throw new Error(`Fetch item failed: ${res.status}`);
+        const it = await res.json();
+
+        // Populate the form
+        $("itemId").value = it.id;
+        $("existingImageUrl").value = it.imageUrl || ""; // preserve current image
+        $("title").value = it.title || "";
+        $("author").value = it.author || "";
+        $("description").value = it.description || "";
+        $("price").value = it.price ?? 0;
+        $("stockQty").value = it.stockQty ?? 0;
+
+        editing = true; // we’re now in edit mode
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } catch (err) {
+        console.error(err);
+        notify(err.message || "Could not load item.", false);
       }
     }
 
-    $("logout-btn").addEventListener("click", () => {
-      sessionStorage.removeItem("user");
-      sessionStorage.removeItem("cartId");
-      window.location.href = "/PahanaEduWeb/login.html";
-    });
-
-    // ===== Image Upload then Save Item =====
-    $("itemForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      // Basic client validation
-      const title = $("title").value.trim();
-      const author = $("author").value.trim();
-      const description = $("description").value.trim();
-      const price = parseFloat($("price").value);
-      const stockQty = parseInt($("stockQty").value, 10);
-
-      if (!title || !author || !description || isNaN(price) || price < 0 || isNaN(stockQty) || stockQty < 0) {
-        notify("Please fill all fields correctly (price ≥ 0, stock ≥ 0).", false);
-        return;
-      }
-
-      const id = $("itemId").value;
-      const file = $("imageUpload").files[0];
-
+    if (action === "delete") {
+      if (!confirm("Delete this item?")) return;
       try {
-        let imageUrl = null;
-
-        // If creating OR changing image on edit: upload first
-        if (file) {
-          const fd = new FormData();
-          fd.append("file", file);
-          const up = await fetch(`${ITEMS_API}/upload`, { method: "POST", body: fd });
-          if (!up.ok) throw new Error(`Image upload failed: ${up.status}`);
-          const upJson = await up.json();
-          imageUrl = upJson.imageUrl;
-        }
-
-        // Build payload
-        const payload = { title, author, description, price, stockQty };
-        if (imageUrl) payload.imageUrl = imageUrl; // keep existing if not provided
-
-        const method = id ? "PUT" : "POST";
-        const url = id ? `${ITEMS_API}/${id}` : ITEMS_API;
-
-        const res = await fetch(url, {
-          method,
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-        if (!res.ok) throw new Error(`Save failed: ${res.status}`);
-        $("itemForm").reset();
-        $("itemId").value = "";
-        notify(id ? "Item updated!" : "Item created!", true);
+        const res = await fetch(`${ITEMS_API}/${id}`, { method: "DELETE" });
+        if (!res.ok) throw new Error(`Delete failed: ${res.status}`);
+        notify("Item deleted!", true);
         await loadItems();
       } catch (err) {
         console.error(err);
-        notify(err.message || "Failed to save item.", false);
-      }
-    });
-
-    $("reset-btn").addEventListener("click", () => {
-      $("itemForm").reset();
-      $("itemId").value = "";
-    });
-
-    // ===== Load Items =====
-    async function loadItems() {
-      try {
-        const res = await fetch(ITEMS_API);
-        if (!res.ok) throw new Error(`Fetch items failed: ${res.status}`);
-        const items = await res.json();
-        renderTable(items);
-      } catch (err) {
-        console.error(err);
-        notify(err.message || "Error loading items.", false);
+        notify(err.message || "Could not delete item.", false);
       }
     }
+  });
 
-    function renderTable(items) {
-      const tb = $("itemTable");
-      tb.innerHTML = "";
-      if (!items || !items.length) {
-        tb.innerHTML = `<tr><td colspan="6" class="p-3 text-muted">No items found</td></tr>`;
-        return;
-      }
-      for (const item of items) {
-        const price = Number(item.price || 0).toFixed(2);
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td class="p-2">
-            <img src="http://localhost:8080/PahanaEduService/${item.imageUrl || ''}"
-                 alt="${item.title || ''}" class="h-16 w-16 object-cover rounded"/>
-          </td>
-          <td class="p-2">${item.title || ""}</td>
-          <td class="p-2">${item.author || ""}</td>
-          <td class="p-2">Rs. ${price}</td>
-          <td class="p-2">${item.stockQty ?? 0}</td>
-          <td class="p-2">
-            <button class="btn-warning px-3 py-1 rounded" data-action="edit" data-id="${item.id}">Edit</button>
-            <button class="btn-danger px-3 py-1 rounded ml-2" data-action="delete" data-id="${item.id}">Delete</button>
-          </td>
-        `;
-        tb.appendChild(row);
-      }
-    }
-
-    // Delegated actions
-    document.addEventListener("click", async (e) => {
-      const btn = e.target.closest("button[data-action]");
-      if (!btn) return;
-      const id = btn.getAttribute("data-id");
-      const action = btn.getAttribute("data-action");
-
-      if (action === "edit") {
-        try {
-          const res = await fetch(`${ITEMS_API}/${id}`);
-          if (!res.ok) throw new Error(`Fetch item failed: ${res.status}`);
-          const it = await res.json();
-          $("itemId").value = it.id;
-          $("title").value = it.title || "";
-          $("author").value = it.author || "";
-          $("description").value = it.description || "";
-          $("price").value = it.price ?? 0;
-          $("stockQty").value = it.stockQty ?? 0;
-          // keep existing image if not re-uploaded
-          window.scrollTo({ top: 0, behavior: "smooth" });
-        } catch (err) {
-          console.error(err);
-          notify(err.message || "Could not load item.", false);
-        }
-      }
-
-      if (action === "delete") {
-        if (!confirm("Delete this item?")) return;
-        try {
-          const res = await fetch(`${ITEMS_API}/${id}`, { method: "DELETE" });
-          if (!res.ok) throw new Error(`Delete failed: ${res.status}`);
-          notify("Item deleted!", true);
-          await loadItems();
-        } catch (err) {
-          console.error(err);
-          notify(err.message || "Could not delete item.", false);
-        }
-      }
+  // Search
+  $("search").addEventListener("input", () => {
+    const q = $("search").value.trim().toLowerCase();
+    const rows = Array.from($("itemTable").children);
+    rows.forEach((tr) => {
+      const t = tr.children[1]?.textContent.toLowerCase() || "";
+      const a = tr.children[2]?.textContent.toLowerCase() || "";
+      tr.style.display = t.includes(q) || a.includes(q) ? "" : "none";
     });
+  });
 
-    // Search
-    $("search").addEventListener("input", () => {
-      const q = $("search").value.trim().toLowerCase();
-      const rows = Array.from($("itemTable").children);
-      rows.forEach(tr => {
-        const t = tr.children[1]?.textContent.toLowerCase() || "";
-        const a = tr.children[2]?.textContent.toLowerCase() || "";
-        tr.style.display = (t.includes(q) || a.includes(q)) ? "" : "none";
-      });
-    });
+  // Initial load
+  (async () => {
+    await loadItems();
+  })();
+</script>
 
-    // Initial load
-    (async () => { await loadItems(); })();
-  </script>
-</body>
+    </body>
 </html>

@@ -391,103 +391,130 @@
       }
 
       // Complete checkout
-      async function completeCheckout() {
-        try {
-          const cart = await getCart();
-          if (!cart) return;
+      // Complete checkout (with stock decrement)
+async function completeCheckout() {
+  try {
+    const cart = await getCart();
+    if (!cart) return;
 
-          const cartItemsRes = await fetch(`${API_BASE}/cart-items/cart/${cart.id}`, {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' }
-          });
-          if (!cartItemsRes.ok) {
-            const errorText = await cartItemsRes.text();
-            throw new Error(`Failed to fetch cart items: ${cartItemsRes.status} ${errorText}`);
-          }
-          const cartItems = await cartItemsRes.json();
-          if (!cartItems || cartItems.length === 0) {
-            showNotification('Cart is empty. Please add items to proceed.', false);
-            return;
-          }
+    // 1) Load cart items
+    const cartItemsRes = await fetch(`${API_BASE}/cart-items/cart/${cart.id}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    if (!cartItemsRes.ok) {
+      const errorText = await cartItemsRes.text();
+      throw new Error(`Failed to fetch cart items: ${cartItemsRes.status} ${errorText}`);
+    }
+    const cartItems = await cartItemsRes.json();
+    if (!cartItems || cartItems.length === 0) {
+      showNotification('Cart is empty. Please add items to proceed.', false);
+      return;
+    }
 
-          // Compute total and cache details
-          let totalAmount = 0;
-          const detailed = [];
-          for (const ci of cartItems) {
-            const item = await fetchItemDetails(ci.itemId);
-            if (!item) continue;
-            const line = Number(ci.quantity) * Number(item.price);
-            totalAmount += line;
-            detailed.push({ item, ci, line });
-          }
-
-          // Build order payload
-          const orderPayload = {
-            orderDate: formatLocalDateTime(),
-            status: 'pending',
-            totalAmount: totalAmount,
-            customerId: selectedCustomer ? selectedCustomer.id : null
-          };
-          console.log('Creating order with payload:', orderPayload);
-
-          // Create order
-          const orderRes = await fetch(`${API_BASE}/orders`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(orderPayload)
-          });
-          if (!orderRes.ok) {
-            const errorText = await orderRes.text();
-            throw new Error(`Failed to create order: ${orderRes.status} ${errorText}`);
-          }
-          const order = await orderRes.json();
-          if (!order.id || order.id === 0) {
-            throw new Error('Order created but ID not returned. Ensure backend sets generated ID.');
-          }
-          console.log('Order created:', order);
-
-          // Insert order_items
-          for (const row of detailed) {
-            const itemRes = await fetch(`${API_BASE}/orderitems`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                orderId: order.id,
-                itemId: row.ci.itemId,
-                quantity: row.ci.quantity,
-                unitPrice: row.item.price
-              })
-            });
-            if (!itemRes.ok) {
-              const eText = await itemRes.text();
-              throw new Error(`Failed to add order item: ${itemRes.status} ${eText}`);
-            }
-          }
-
-          // Clear cart
-          const clearRes = await fetch(`${API_BASE}/cart-items/cart/${cart.id}`, {
-            method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' }
-          });
-          if (!clearRes.ok && clearRes.status !== 204) {
-            console.warn('Bulk delete failed, attempting individual deletes');
-            for (const ci of cartItems) {
-              await fetch(`${API_BASE}/cart-items/${ci.id}`, {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' }
-              }).catch(() => {});
-            }
-          }
-
-          // Reset and redirect
-          sessionStorage.removeItem('cartId');
-          showNotification(`Order #${order.id} placed successfully!`, true);
-          setTimeout(() => window.location.href = '/PahanaEduWeb/cashierDashboard.html', 1200);
-        } catch (error) {
-          console.error('Error completing checkout:', error);
-          showNotification(`Error completing checkout: ${error.message}`, false);
-        }
+    // 2) Fetch current item details + compute totals + RE‑VALIDATE stock
+    let totalAmount = 0;
+    const detailed = [];
+    for (const ci of cartItems) {
+      const item = await fetchItemDetails(ci.itemId);   // GET /items/{id}
+      if (!item) {
+        throw new Error(`Item ${ci.itemId} not found`);
       }
+      const qty = Number(ci.quantity);
+      const stock = Number(item.stockQty || 0);
+      if (qty > stock) {
+        // Abort if inventory is insufficient now
+        showNotification(`Insufficient stock for "${item.title}". Available: ${stock}, requested: ${qty}`, false);
+        return;
+      }
+      const line = qty * Number(item.price);
+      totalAmount += line;
+      detailed.push({ item, ci, line, newStock: stock - qty });
+    }
+
+    // 3) Create the order
+    const orderPayload = {
+      orderDate: formatLocalDateTime(),
+      status: 'pending',
+      totalAmount: totalAmount,
+      customerId: selectedCustomer ? selectedCustomer.id : null
+    };
+    const orderRes = await fetch(`${API_BASE}/orders`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(orderPayload)
+    });
+    if (!orderRes.ok) {
+      const errorText = await orderRes.text();
+      throw new Error(`Failed to create order: ${orderRes.status} ${errorText}`);
+    }
+    const order = await orderRes.json();
+    if (!order.id || order.id === 0) {
+      throw new Error('Order created but ID not returned. Ensure backend sets generated ID.');
+    }
+
+    // 4) Create order items
+    for (const row of detailed) {
+      const itemRes = await fetch(`${API_BASE}/orderitems`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderId: order.id,
+          itemId: row.ci.itemId,
+          quantity: row.ci.quantity,
+          unitPrice: row.item.price
+        })
+      });
+      if (!itemRes.ok) {
+        const eText = await itemRes.text();
+        throw new Error(`Failed to add order item: ${itemRes.status} ${eText}`);
+      }
+    }
+
+    // 5) Reduce stock for each item (PUT /items/{id} expects full Item JSON)
+    //    We preserve all original fields and only change stockQty.
+    for (const row of detailed) {
+      const updatedItem = {
+        ...row.item,
+        stockQty: row.newStock
+      };
+      const upd = await fetch(`${API_BASE}/items/${row.item.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedItem)
+      });
+      if (!upd.ok) {
+        const eText = await upd.text();
+        throw new Error(`Failed to reduce stock for item #${row.item.id}: ${upd.status} ${eText}`);
+      }
+    }
+
+    // 6) Clear cart
+    const clearRes = await fetch(`${API_BASE}/cart-items/cart/${cart.id}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    if (!clearRes.ok && clearRes.status !== 204) {
+      // Fallback: delete individually
+      for (const ci of cartItems) {
+        await fetch(`${API_BASE}/cart-items/${ci.id}`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' }
+        }).catch(() => {});
+      }
+    }
+
+    // 7) Done
+    sessionStorage.removeItem('cartId');
+    showNotification(`Order #${order.id} placed successfully!`, true);
+    setTimeout(() => window.location.href = '/PahanaEduWeb/cashierDashboard.html', 1200);
+
+  } catch (error) {
+    console.error('Error completing checkout:', error);
+    showNotification(`Error completing checkout: ${error.message}`, false);
+  }
+}
+
 
       // Print
       document.getElementById('print-bill-btn').addEventListener('click', () => {

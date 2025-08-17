@@ -1,191 +1,320 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Bookshop Management System - Admin Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background-color: #F5F6FA; /* Light Gray */
-    }
-    .sidebar {
-      background: linear-gradient(to bottom, #2C3E94, #1A2A6C); /* Royal Blue gradient */
-      transition: all 0.3s ease;
-    }
-    .sidebar a:hover {
-      background-color: #2ECC71; /* Emerald Green */
-      transform: translateX(5px);
-    }
-    .card {
-      background-color: #FFFFFF; /* White */
-      border: 1px solid rgba(44, 62, 148, 0.1);
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-      transition: transform 0.2s ease;
-    }
-    .card:hover {
-      transform: translateY(-2px);
-    }
-    .text-primary {
-      color: #2D3436; /* Charcoal */
-    }
-    .text-muted {
-      color: #7F8C8D; /* Mid Gray */
-    }
-    .btn-primary {
-      background: linear-gradient(to right, #2ECC71, #27AE60); /* Emerald Green gradient */
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-    .btn-danger {
-      background-color: #E74C3C; /* Crimson Red */
-    }
-    .btn-danger:hover {
-      background-color: #C0392B;
-    }
-    .btn-warning {
-      background-color: #F1C40F; /* Amber Yellow */
-    }
-    .btn-warning:hover {
-      background-color: #D4AC0D;
-    }
-    .header {
-      background-color: #FFFFFF;
-      border-bottom: 1px solid rgba(44, 62, 148, 0.1);
-    }
-    section {
-      animation: fadeIn 0.5s ease-in-out;
-    }
-    .error {
-      color: #E74C3C; /* Crimson Red */
-      background-color: rgba(231, 76, 60, 0.1);
-      border: 1px solid #E74C3C;
-    }
-    .success {
-      color: #2ECC71; /* Emerald Green */
-      background-color: rgba(46, 204, 113, 0.1);
-      border: 1px solid #2ECC71;
-    }
-    .modal {
-      background-color: rgba(0, 0, 0, 0.5);
-      transition: opacity 0.3s ease;
-    }
-    input:focus, select:focus, textarea:focus {
-      outline: none;
-      border: 2px solid #2C3E94; /* Royal Blue */
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+    body { font-family: Inter,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif; background:#F5F6FA; }
+    .header { background:#fff; border-bottom:1px solid rgba(44,62,148,.1); }
+    .sidebar { background:linear-gradient(to bottom,#2C3E94,#1A2A6C); transition:.3s ease; }
+    .sidebar a:hover { background:#2ECC71; transform: translateX(5px); }
+    .card { background:#fff; border:1px solid rgba(44,62,148,.1); box-shadow:0 4px 6px rgba(0,0,0,.05); transition:transform .2s ease; }
+    .card:hover { transform: translateY(-2px); }
+    .text-primary { color:#2D3436; }
+    .text-muted { color:#7F8C8D; }
+    .btn-primary { background:linear-gradient(to right,#2ECC71,#27AE60); color:#fff; }
+    .btn-primary:hover { filter:brightness(1.05); }
+    .error { color:#E74C3C; background:rgba(231,76,60,.1); border:1px solid #E74C3C; }
+    .success { color:#2ECC71; background:rgba(46,204,113,.1); border:1px solid #2ECC71; }
+    .active-link { background:#2ECC71 !important; }
   </style>
 </head>
 <body class="flex flex-col min-h-screen">
   <!-- Header -->
   <header class="header flex items-center justify-between p-4">
-    <div class="flex items-center">
-        <a href="http://localhost:8080/PahanaEduWeb/adminDashboard.html"><img src="images/pahanaEduLogo.png" alt="Pahana Edu Logo" width="120" class="mr-4"></a>
-      
+    <div class="flex items-center gap-3">
+      <a href="/PahanaEduWeb/adminDashboard.html">
+        <img src="/PahanaEduWeb/images/pahanaEduLogo.png" alt="Pahana Edu Logo" width="120"/>
+      </a>
       <h1 class="text-xl font-bold text-primary">Bookshop Management System</h1>
     </div>
-    <div class="flex items-center">
-      <span id="user-greeting" class="text-primary mr-4"></span>
-      <button id="logout-btn" class="btn-primary text-white px-4 py-2 rounded">Logout</button>
+    <div class="flex items-center gap-3">
+      <span id="user-greeting" class="text-primary"></span>
+      <button id="logout-btn" class="btn-primary px-4 py-2 rounded">Logout</button>
     </div>
   </header>
+
+  <!-- Notification -->
   <div id="notification" class="hidden text-center m-4 p-2 rounded text-sm"></div>
+
   <div class="flex flex-1">
     <!-- Sidebar -->
-    <div class="sidebar w-64 text-white p-4 fixed h-full">
-      <nav>
-        <a href="#dashboard" class="block py-2 px-4 rounded hover:text-white mb-2">Dashboard</a>
-        <a href="userManagement.html" class="block py-2 px-4 rounded hover:text-white mb-2">User Management</a>
-        <a href="customerManagement.html" class="block py-2 px-4 rounded hover:text-white mb-2">Customer Management</a>
-        <a href="itemManagement.html" class="block py-2 px-4 rounded hover:text-white mb-2">Item Management</a>
-        <a href="http://localhost:8080/PahanaEduWeb/orderDetails.html" class="block py-2 px-4 rounded hover:text-white mb-2">Order Details</a>
-        <a href="help.html" class="block py-2 px-4 rounded hover:text-white mb-2">Help Section</a>
-
-
+    <aside class="sidebar w-64 text-white p-4 fixed h-full">
+      <nav class="space-y-2">
+        <a href="/PahanaEduWeb/adminDashboard.html" class="block py-2 px-4 rounded active-link">Dashboard</a>
+        <a href="/PahanaEduWeb/userManagement.html" class="block py-2 px-4 rounded">User Management</a>
+        <a href="/PahanaEduWeb/customerManagement.html" class="block py-2 px-4 rounded">Customer Management</a>
+        <a href="/PahanaEduWeb/itemManagement.html" class="block py-2 px-4 rounded">Item Management</a>
+        <a href="/PahanaEduWeb/orderDetails.html" class="block py-2 px-4 rounded">Order Details</a>
+        <a href="/PahanaEduWeb/help.html" class="block py-2 px-4 rounded">Help Section</a>
       </nav>
-    </div>
-    <!-- Main Content -->
-    <div class="flex-1 p-6 ml-64">
-      <!-- Dashboard Section -->
-      <section id="dashboard" class="mb-8">
+    </aside>
+
+    <!-- Main -->
+    <main class="flex-1 p-6 ml-0 md:ml-64">
+      <section class="mb-8">
         <h2 class="text-2xl font-bold text-primary mb-4">Dashboard</h2>
+
+        <!-- KPI Cards -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div class="card p-6 rounded-lg">
             <h3 class="font-semibold text-lg">Sales Today</h3>
-            <p class="text-muted">To be implemented</p>
+            <p id="sales-today" class="text-3xl font-bold mt-2">—</p>
+            <p class="text-muted text-sm mt-1">Sum of today's order totals</p>
           </div>
           <div class="card p-6 rounded-lg">
             <h3 class="font-semibold text-lg">Low Stock Alerts</h3>
-            <p class="text-muted">To be implemented</p>
+            <p id="low-stock-count" class="text-3xl font-bold mt-2">—</p>
+            <p class="text-muted text-sm mt-1">Items at or below threshold</p>
           </div>
           <div class="card p-6 rounded-lg">
-            <h3 class="font-semibold text-lg">Customer Summary</h3>
-            <p class="text-muted">To be implemented</p>
+            <h3 id="third-kpi-title" class="font-semibold text-lg">Customers</h3>
+            <p id="customer-count" class="text-3xl font-bold mt-2">—</p>
+            <p class="text-muted text-sm mt-1" id="third-kpi-sub">Total registered</p>
           </div>
         </div>
       </section>
-      <!-- Delete Confirmation Modal -->
-      <div id="delete-modal" class="modal hidden fixed inset-0 flex items-center justify-center">
-        <div class="card p-6 rounded-lg w-full max-w-md">
-          <h3 class="text-xl font-bold text-primary mb-4">Confirm Delete</h3>
-          <p class="text-muted mb-4">Are you sure you want to delete <span id="delete-name"></span>?</p>
-          <div class="flex justify-end space-x-2">
-            <button id="delete-cancel" class="btn-primary text-white px-4 py-2 rounded">Cancel</button>
-            <button id="delete-confirm" class="btn-danger text-white px-4 py-2 rounded">Delete</button>
+
+      <!-- Tables -->
+      <section class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div class="card p-4 rounded">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-lg font-semibold text-primary">Low Stock Items</h3>
+            <span class="text-muted text-sm">Top 10</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="min-w-full">
+              <thead class="bg-gray-100">
+                <tr>
+                  <th class="p-2 text-left">Title</th>
+                  <th class="p-2 text-left">Author</th>
+                  <th class="p-2 text-right">Stock</th>
+                </tr>
+              </thead>
+              <tbody id="low-stock-table"></tbody>
+            </table>
           </div>
         </div>
-      </div>
-    </div>
+
+        <div class="card p-4 rounded">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-lg font-semibold text-primary">Recent Orders</h3>
+            <span class="text-muted text-sm">Last 10</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="min-w-full">
+              <thead class="bg-gray-100">
+                <tr>
+                  <th class="p-2 text-left">Order #</th>
+                  <th class="p-2 text-left">Customer</th>
+                  <th class="p-2 text-right">Total</th>
+                  <th class="p-2 text-left">Date</th>
+                </tr>
+              </thead>
+              <tbody id="recent-orders-table"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
   </div>
+
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const user = JSON.parse(sessionStorage.getItem('user'));
-      const notification = document.getElementById('notification');
-      console.log('sessionStorage user:', user);
+    // ===== Config =====
+    const API_BASE = "http://localhost:8080/PahanaEduService/api";
+    const ENDPOINTS = {
+      orders: `${API_BASE}/orders`,
+      items:  `${API_BASE}/items`,
+      // Optional resources: we try customers first, then fallback to users
+      customersCount: `${API_BASE}/customers/count`,
+      customers:      `${API_BASE}/customers`,
+      users:          `${API_BASE}/users`
+    };
+    const LOW_STOCK_THRESHOLD = 5; // change as you like
 
-      if (!user || !user.role) {
-        console.log('No user or role in sessionStorage, redirecting to login');
-        notification.textContent = 'Please log in to access the dashboard';
-        notification.classList.add('error');
-        notification.classList.remove('hidden');
-        setTimeout(() => window.location.href = 'login.html', 2000);
+    // ===== Helpers =====
+    const $ = (id) => document.getElementById(id);
+    const notify = (msg, ok=true) => {
+      const n = $("notification");
+      n.textContent = msg;
+      n.classList.remove("hidden","error","success");
+      n.classList.add(ok ? "success" : "error");
+      setTimeout(()=> n.classList.add("hidden"), 3000);
+    };
+    const fmtMoney = (v) => `Rs. ${Number(v||0).toFixed(2)}`;
+    const fmtDate  = (val) => {
+      if (!val) return "";
+      try { return new Date(val).toLocaleString(); } catch { return val; }
+    };
+    const sameDay = (dateish, today = new Date()) => {
+      const d = new Date(dateish);
+      return d.getFullYear() === today.getFullYear() &&
+             d.getMonth()    === today.getMonth() &&
+             d.getDate()     === today.getDate();
+    };
+    const roleOf = (u) => String(u?.role||"").trim().toLowerCase();
+
+    // ===== Auth / RBAC =====
+    (function rbac(){
+      const user = JSON.parse(sessionStorage.getItem('user') || 'null');
+      if (!user || !user.username || !user.role) {
+        notify("Please log in to access the dashboard", false);
+        setTimeout(()=> window.location.href = "/PahanaEduWeb/login.html", 1200);
         return;
       }
-
-      const isAdmin = user.role.toLowerCase() === 'admin';
-      if (!isAdmin) {
-        console.log('User is not Admin, redirecting to cashierDashboard.html');
-        notification.textContent = 'Access denied: Admins only';
-        notification.classList.add('error');
-        notification.classList.remove('hidden');
-        setTimeout(() => window.location.href = 'cashierDashboard.html', 2000);
+      $("user-greeting").textContent = `Welcome, ${user.username}`;
+      if (roleOf(user) !== "admin") {
+        notify("Access denied: Admins only", false);
+        setTimeout(()=> window.location.href = "/PahanaEduWeb/cashierDashboard.html", 1200);
         return;
       }
+    })();
 
-      document.getElementById('user-greeting').textContent = `Welcome, ${user.username}`;
-
-      document.getElementById('logout-btn').addEventListener('click', () => {
-        console.log('Logging out, clearing sessionStorage');
-        sessionStorage.removeItem('user');
-        window.location.href = 'login.html';
-      });
-
-      function showNotification(message, isSuccess) {
-        notification.textContent = message;
-        notification.classList.remove('error', 'success');
-        notification.classList.add(isSuccess ? 'success' : 'error');
-        notification.classList.remove('hidden');
-        setTimeout(() => notification.classList.add('hidden'), 3000);
-      }
+    // ===== Logout =====
+    $("logout-btn").addEventListener("click", () => {
+      sessionStorage.removeItem("user");
+      sessionStorage.removeItem("cartId");
+      window.location.href = "/PahanaEduWeb/login.html";
     });
+
+    // ===== Load KPIs using your actual endpoints =====
+    async function loadSalesToday() {
+      try {
+        const r = await fetch(ENDPOINTS.orders);
+        if (!r.ok) throw new Error(r.status);
+        const orders = await r.json();
+        // Using your Order model: expect fields like { id, orderDate, totalAmount, customerId/customerName? }
+        const todayTotal = (orders || [])
+          .filter(o => o && o.orderDate && sameDay(o.orderDate))
+          .reduce((sum, o) => sum + Number(o.totalAmount || 0), 0);
+        $("sales-today").textContent = fmtMoney(todayTotal);
+      } catch (e) {
+        console.warn("SalesToday error:", e);
+        $("sales-today").textContent = "Rs. 0.00";
+      }
+    }
+
+    async function loadLowStock() {
+      const tb = $("low-stock-table");
+      tb.innerHTML = "";
+      try {
+        const r = await fetch(ENDPOINTS.items);
+        if (!r.ok) throw new Error(r.status);
+        const items = await r.json();
+        const low = (items || [])
+          .filter(it => Number(it?.stockQty || 0) <= LOW_STOCK_THRESHOLD)
+          .sort((a,b) => Number(a.stockQty||0) - Number(b.stockQty||0))
+          .slice(0, 10);
+
+        $("low-stock-count").textContent = String(
+          (items || []).filter(it => Number(it?.stockQty || 0) <= LOW_STOCK_THRESHOLD).length
+        );
+
+        if (!low.length) {
+          tb.innerHTML = `<tr><td colspan="3" class="p-3 text-muted">No low stock items 🎉</td></tr>`;
+          return;
+        }
+        for (const it of low) {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td class="p-2">${it.title || ""}</td>
+            <td class="p-2">${it.author || ""}</td>
+            <td class="p-2 text-right">${it.stockQty ?? 0}</td>
+          `;
+          tb.appendChild(tr);
+        }
+      } catch (e) {
+        console.warn("LowStock error:", e);
+        $("low-stock-count").textContent = "0";
+        tb.innerHTML = `<tr><td colspan="3" class="p-3 text-muted">Error loading low stock</td></tr>`;
+      }
+    }
+
+    async function loadRecentOrders() {
+      const tb = $("recent-orders-table");
+      tb.innerHTML = "";
+      try {
+        const r = await fetch(ENDPOINTS.orders);
+        if (!r.ok) throw new Error(r.status);
+        const orders = await r.json();
+        const recent = (orders || [])
+          .sort((a,b) => new Date(b.orderDate) - new Date(a.orderDate))
+          .slice(0, 10);
+
+        if (!recent.length) {
+          tb.innerHTML = `<tr><td colspan="4" class="p-3 text-muted">No recent orders</td></tr>`;
+          return;
+        }
+        for (const o of recent) {
+          const tr = document.createElement("tr");
+          const who = o.customerName || o.customerId || "—";
+          tr.innerHTML = `
+            <td class="p-2">#${o.id}</td>
+            <td class="p-2">${who}</td>
+            <td class="p-2 text-right">${fmtMoney(o.totalAmount)}</td>
+            <td class="p-2">${fmtDate(o.orderDate)}</td>
+          `;
+          tb.appendChild(tr);
+        }
+      } catch (e) {
+        console.warn("RecentOrders error:", e);
+        tb.innerHTML = `<tr><td colspan="4" class="p-3 text-muted">Error loading orders</td></tr>`;
+      }
+    }
+
+    async function loadThirdKPI() {
+      // Prefer customers endpoints; fallback to users.
+      const titleEl = $("third-kpi-title");
+      const subEl   = $("third-kpi-sub");
+      try {
+        // 1) /customers/count
+        let r = await fetch(ENDPOINTS.customersCount);
+        if (r.ok) {
+          const j = await r.json();
+          titleEl.textContent = "Customers";
+          subEl.textContent = "Total registered";
+          $("customer-count").textContent = j.count ?? 0;
+          return;
+        }
+
+        // 2) /customers
+        r = await fetch(ENDPOINTS.customers);
+        if (r.ok) {
+          const arr = await r.json();
+          titleEl.textContent = "Customers";
+          subEl.textContent = "Total registered";
+          $("customer-count").textContent = (arr || []).length;
+          return;
+        }
+
+        // 3) fallback to /users
+        r = await fetch(ENDPOINTS.users);
+        if (r.ok) {
+          const users = await r.json();
+          // if role field exists, count customers only; else total
+          const onlyCustomers = (users || []).filter(u => String(u?.role||"").toLowerCase() === "customer");
+          const count = onlyCustomers.length > 0 ? onlyCustomers.length : (users || []).length;
+          titleEl.textContent = onlyCustomers.length > 0 ? "Customers" : "Users";
+          subEl.textContent = onlyCustomers.length > 0 ? "Total registered" : "Total users";
+          $("customer-count").textContent = count;
+          return;
+        }
+
+        throw new Error("No customers/users endpoint available");
+      } catch (e) {
+        console.warn("Third KPI error:", e);
+        titleEl.textContent = "Users";
+        subEl.textContent = "Total users";
+        $("customer-count").textContent = "0";
+      }
+    }
+
+    // ===== Boot =====
+    (async function init(){
+      await Promise.all([loadSalesToday(), loadLowStock(), loadRecentOrders(), loadThirdKPI()]);
+    })();
   </script>
 </body>
 </html>
